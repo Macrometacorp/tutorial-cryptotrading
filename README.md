@@ -58,6 +58,7 @@ Now goto the `Properties` tab in the aws console for this bucket and open `Stati
 # 5. Already deployed demo
 
 Go to `http://qa1.crypto.demo.s3-website.us-east-2.amazonaws.com/` 
+
 Login using demo, root, demo and fabric _system.
 
 The graph will start loading data in a minutes time, after calculating SMA.
