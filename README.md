@@ -25,7 +25,7 @@ If `node_modules` is not there, execute `npm install`.
 
 Once all the node modules have been installed execute `npm start` to start the development server. This will start a local development server on `localhost:<some_port>`. 
 
-#4. How to deploy app on s3
+# 4. How to deploy app on s3
 
 Do to crypto-demo and run `npm run build`.
 This will create a folder build.
@@ -55,7 +55,7 @@ A sample `bucket policy` is:
 
 Now goto the `Properties` tab in the aws console for this bucket and open `Static website hosting` option. Then select the option `Use this bucket to host a website` and provide `index.html` for both `Index document` and `Error document` text fields. Click on save and the website is now live!
 
-#5. Already deployed demo
+# 5. Already deployed demo
 
 Go to `http://qa1.crypto.demo.s3-website.us-east-2.amazonaws.com/` 
 Login using demo, root, demo and fabric _system.
