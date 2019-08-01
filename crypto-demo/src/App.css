@@ -1,0 +1,76 @@
+.App {
+  background-color: white;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-size: calc(10px + 2vmin);
+  background-color: black;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+.leftPane {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  background-color: #262626;
+}
+
+.textField {
+  display: flex;
+  margin: 20px 20px 0px 20px;
+  justify-content: center;
+  color: #000;
+}
+
+.currentValue {
+  opacity: 0.5;
+  margin-top: -4px;
+  margin-right: 18px;
+  width: 62px;
+  font-size: medium;
+  font-weight: 500;
+  color: white;
+  text-align: center
+}
+
+.currentValueText {
+  height: 28px;
+  display: flex;
+  color: #A7CC55;
+  align-items: center;
+  font-size: 1.5em;
+  font-weight: 400
+}
+
+.tableContainer {
+  max-height: 550px;
+  overflow-y: auto;
+  overflow-x: auto;
+  display: flex;
+  flex: 3;
+  background-color: #262626
+}
+
+.MuiNotchedOutline-focused-56 {
+  border-color: white !important;
+}
+
+.MuiFormLabel-root-17.MuiFormLabel-focused-18 {
+  color: rgba(255, 255, 255, 0.54) !important;
+}
+
+.MuiFormLabel-root-17 {
+  color: rgba(255, 255, 255, 0.54) !important;
+}
+
+input {
+  color: white !important;
+}
+
+.actions {
+  font-size: 18px
+}

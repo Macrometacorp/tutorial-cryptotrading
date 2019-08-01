@@ -1,0 +1,21 @@
+##
+## Service
+##
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "crypto-trading.fullname" . }}-ui
+  labels:
+    app: {{ template "crypto-trading.name" . }}-ui
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    component: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+spec:
+  type: {{ .Values.cryptotrading.service.type }}
+  ports:
+    - port: {{ .Values.cryptotrading.service.port }}
+      name: http
+  selector:
+    app: {{ template "crypto-trading.name" . }}-ui
+    component: {{ .Release.Name }}

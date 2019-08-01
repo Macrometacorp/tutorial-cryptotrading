@@ -1,0 +1,21 @@
+##
+## Proxy Ingress
+## 
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ template "crypto-trading.fullname" . }}-traefik-ingress
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.cryptotrading.ingress.class | quote }}
+    {{- if eq .Values.cryptotrading.ingress.class "traefik" }}
+    # traefik.frontend.rule.type: PathPrefixStrip
+    {{- end }}
+spec:
+  rules:
+  - host: {{ .Values.cryptotrading.ingress.host }}
+    http:
+      paths:
+      - path: {{ .Values.cryptotrading.ingress.path }}
+        backend:
+          serviceName: {{ template "crypto-trading.fullname" . }}-ui
+          servicePort: http 
