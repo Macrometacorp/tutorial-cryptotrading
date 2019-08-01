@@ -182,7 +182,7 @@ class App extends Component {
 
   getDocumentData() {
     $.ajax({
-      url: `https://${this.state.selectedRegionUrl}/_tenant/demo/_fabric/demo/cursor`,
+      url: `https://${this.state.selectedRegionUrl}/_tenant/${this.state.tenant}/_fabric/${this.state.fabric}/cursor`,
       type: 'POST',
       contentType: 'text/plain',
       processData: false,
