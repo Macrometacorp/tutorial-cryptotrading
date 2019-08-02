@@ -3,18 +3,6 @@ import _ from 'lodash';
 import getSymbolFromCurrency from 'currency-symbol-map';
 import './App.css';
 
-//Sulom
-/*
-export async function getregions(config){
-    let globalurl = config.global
-    let fabric = new Fabric(`https://${globalurl}`)
-    await fabric.login("demouser", "root", "demouser");
-    fabric.useTenant("demouser");
-    fabric.useFabric("demo");
-    let dcListAll = await fabric.listUserFabrics()
-    let dcListObject = await _.find(dcListAll, function(o) { return o.name === geo_fabric; });
-    console.log( dcListObject.options.dcList.split(","))
-}*/
 
 export const CONSTANTS = {
     CHART1: 0,
@@ -162,4 +150,16 @@ export const makeRegionData = config => {
         return acc;
     }, []);
     return regionData;
+}
+
+export const region = (url ,config) => {
+    console.log("In region",url)
+    const keys = Object.keys(config);
+    for(let key of keys){
+        if(config[key] === url){
+            console.log("Key", key)
+            return key;
+        }
+    }
+
 }

@@ -256,12 +256,11 @@ async function custom_producer(regionurl, streamhandle){
             console.log("Quote data: "+JSON.stringify(ticker))
         }
         catch (err){
-            console.log("In catch")
-            console.log(err)
+            console.log("ERROR: " + err)
     
             }
 
-    }, delay*1000);
+    }, delay*500);
   
 
 }
@@ -329,13 +328,14 @@ export async function custom_consumer(regionurl, tenantname, username, password,
     console.log("Length : ", close_history.length)
     //Compute & Publish SMA
     if(close_history.length >= ma_len){
+        console.log("Publishing mean")
         ma_history.push(nj.mean(close_history))
 
         let sma_dict = {}
         sma_dict['region'] = quoteregion
         sma_dict['exchange'] = exchange
         sma_dict['symbol'] = symbol
-        sma_dict['ma'] = ma_history[-1]
+        sma_dict['ma'] = ma_history[ma_history.length-1]
         sma_dict['close'] = close
         sma_dict['timestamp'] = timestamp.toString()
 

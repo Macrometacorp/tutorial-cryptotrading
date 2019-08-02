@@ -13,7 +13,8 @@ import {
   makeCollectionArray,
   makeCollectionData,
   CONSTANTS,
-  makeRegionData
+  makeRegionData,
+  region
 } from './utils';
 
 import{
@@ -102,9 +103,10 @@ class App extends Component {
       selectedRegionUrl: '',
       loginModal: true,
       tenant: '',
-      fabric: '',
+      fabric: '_system',
       username: '',
-      password: ''
+      password: '',
+      regionname: ''
     };
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
     this.establishConnection = this.establishConnection.bind(this);
@@ -151,12 +153,7 @@ class App extends Component {
       password: this.state.password
 
     }
-    /*
-    const data = {
-      tenant: 'demo',
-      username: 'demouser',
-      password: 'demouser'
-    };*/
+   
     const url = `https://${this.state.selectedRegionUrl}/_tenant/${this.state.tenant}/_fabric/${this.state.fabric}/_open/auth`;
     $.ajax({
       url,
@@ -274,6 +271,7 @@ class App extends Component {
       if (payload !== 'noop') {
         const decodedMsg = atob(payload);
         const response = decodedMsg && JSON.parse(decodedMsg);
+        console.log("CHART CONSUMER MSG:" , response);
         this.setState({ [chartNum]: makeChartData(response, this.state[chartNum]) });
       }
     };
@@ -393,8 +391,11 @@ class App extends Component {
     newState.documentWs.wsUrls = getDocumentWsUrls(selectedRegionUrl, this.state.tenant, this.state.fabric);
     newState.regionModal = false;
     this.setState(newState, () => {
+      this.state.regionname = region(selectedRegionUrl, Config  )
+
       custom_consumer(selectedRegionUrl, this.state.tenant, this.state.username, this.state.password, this.state.fabric);
       this.login();
+
 
     });
   }
@@ -441,7 +442,7 @@ class App extends Component {
         fullWidth
         open={loginModal}
       >
-        <DialogTitle id="form-dialog-title"> Enter Tenant and Fabric:</DialogTitle>
+        <DialogTitle id="form-dialog-title"> Enter Tenant and Credentials:</DialogTitle>
         <DialogContent>
         
           <TextField
@@ -454,20 +455,6 @@ class App extends Component {
             onChange={(event) => {
               const newtenant = event.target.value;
               this.setState({ tenant: newtenant });
-            }}
-            margin="normal"
-          /><br></br>
-          <TextField
-            label="Fabric "
-            InputProps={{
-              className: classes.input
-            }}            
-            
-            defaultValue="Enter Fabric Name"
-            onChange={(event) => {
-              const newfabric = event.target.value;
-              this.setState({ fabric: newfabric });
-
             }}
             margin="normal"
           /><br></br>
@@ -525,7 +512,12 @@ class App extends Component {
     const collection = showFiltered ? filteredData : collectionData;
     return (
       <div className="App">
-        
+        <div className="Region" style={{ backgroundColor: 'black', marginTop: '10px' , marginLeft: '240px'}} >
+        <span className="currentValue">Selected Region :  {this.state.regionname}   </span><br></br>
+        <span className="currentValue">Url : {this.state.selectedRegionUrl}</span>
+
+        </div>
+
         <div className="row" style={{ backgroundColor: 'black', marginTop: '62px' }}>
           {
             [CHART1, CHART2, CHART3].map(
@@ -644,7 +636,8 @@ const styles = theme => ({
   },
   input: {
     backgroundColor:'#404040'
-    }
+    },
+    
 });
 
 export default withStyles(styles)(App);
