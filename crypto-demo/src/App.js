@@ -393,7 +393,8 @@ class App extends Component {
     this.setState(newState, () => {
       this.state.regionname = region(selectedRegionUrl, Config  )
 
-      custom_consumer(selectedRegionUrl, this.state.tenant, this.state.username, this.state.password, this.state.fabric);
+      // ABHISHEK
+      // custom_consumer(selectedRegionUrl, this.state.tenant, this.state.username, this.state.password, this.state.fabric);
       this.login();
 
 

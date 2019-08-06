@@ -168,10 +168,12 @@ function init_exchange(quotecurr){
     }
     
     if (Object.keys(QUOTECURR_EXCHANGE_MAP).includes(quotecurr)){
+        //////////////////
     let eid = QUOTECURR_EXCHANGE_MAP[quotecurr]["exchange"]
     console.log("quote_currency: "+ JSON.stringify(quotecurr)+", exchange_id: "+ JSON.stringify(eid))
     let cmd = 'ccxt.'+ eid + '()'
-    let exchange = eval('new ' + cmd)
+    let exchange = eval('new ' + cmd)// new ccxt.()
+    ///////////
     exchange.enableRateLimit = true
     exchange.rateLimit = 5000
     console.log("Loading markets for Cryptocurrency exchange: " + exchange.name)
