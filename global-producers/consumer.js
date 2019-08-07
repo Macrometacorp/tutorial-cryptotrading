@@ -136,6 +136,24 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
                     console.log("Buy Trade: " + JSON.stringify(tradeobj));
                 }
 
+                // Do we need to SELL?
+                        
+                if (ma_history.length > 3 &&
+                    close_history[close_history.length -1] < ma_history[ma_history.length -1] &&
+                    close_history[close_history.length -2] > ma_history[ma_history.length-2]){
+                    let tradeobj = {}
+                    tradeobj["_key"] = "SELL-" + timestamp.toString()
+                    tradeobj["exchange"] = exchange
+                    tradeobj["symbol"] = symbol
+                    tradeobj["quote_region"] = quoteregion
+                    tradeobj["trade_strategy"] = "MA Trading"
+                    tradeobj["timestamp"] = timestamp
+                    tradeobj["trade_type"] = "SELL"
+                    tradeobj["trade_price"] = close
+                    c8utils.insert_trade_into_c8db(c8_cluster, tradeobj)
+                    tradectr += 1  // Increment the number of trades we put into the DB
+                    console.log("Sell Trade: {}".format(tradeobj))
+    }
 
                 // Check if we need to clean out old trades in the DB.
                 // We will remove the first 'trade_doc_count_delete' records from the DB.
