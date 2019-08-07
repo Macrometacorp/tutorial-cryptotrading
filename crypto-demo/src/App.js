@@ -17,12 +17,6 @@ import {
   region
 } from './utils';
 
-import{
-  custom_consumer
-}from './c8utils'
-
-
-
 import $ from 'jquery';
 
 import Table from '@material-ui/core/Table';
@@ -120,7 +114,7 @@ class App extends Component {
   componentDidMount() {
     this.updateWindowDimensions();
     window.addEventListener('resize', this.updateWindowDimensions)
-    
+
   }
 
   componentWillUnmount() {
@@ -153,7 +147,7 @@ class App extends Component {
       password: this.state.password
 
     }
-   
+
     const url = `https://${this.state.selectedRegionUrl}/_tenant/${this.state.tenant}/_fabric/${this.state.fabric}/_open/auth`;
     $.ajax({
       url,
@@ -271,7 +265,7 @@ class App extends Component {
       if (payload !== 'noop') {
         const decodedMsg = atob(payload);
         const response = decodedMsg && JSON.parse(decodedMsg);
-        console.log("CHART CONSUMER MSG:" , response);
+        console.log("CHART CONSUMER MSG:", response);
         this.setState({ [chartNum]: makeChartData(response, this.state[chartNum]) });
       }
     };
@@ -390,14 +384,9 @@ class App extends Component {
     newState[CHART3].wsUrls = getWsUrls("JPY", selectedRegionUrl, this.state.tenant, this.state.fabric);
     newState.documentWs.wsUrls = getDocumentWsUrls(selectedRegionUrl, this.state.tenant, this.state.fabric);
     newState.regionModal = false;
+    newState.regionname = region(selectedRegionUrl, Config)
     this.setState(newState, () => {
-      this.state.regionname = region(selectedRegionUrl, Config  )
-
-      // ABHISHEK
-      // custom_consumer(selectedRegionUrl, this.state.tenant, this.state.username, this.state.password, this.state.fabric);
       this.login();
-
-
     });
   }
 
@@ -431,10 +420,10 @@ class App extends Component {
     )
   }
 
-  
+
 
   renderLoginModal() {
-   
+
     let { loginModal } = this.state;
     const { classes } = this.props;
 
@@ -445,12 +434,12 @@ class App extends Component {
       >
         <DialogTitle id="form-dialog-title"> Enter Tenant and Credentials:</DialogTitle>
         <DialogContent>
-        
+
           <TextField
             InputProps={{
               className: classes.input
-            }}            
-            label = "Tenant"
+            }}
+            label="Tenant"
             defaultValue="Enter Tenant Name"
 
             onChange={(event) => {
@@ -464,8 +453,8 @@ class App extends Component {
             label="User"
             InputProps={{
               className: classes.input
-            }}            
-            
+            }}
+
             defaultValue="Enter User Name"
             onChange={(event) => {
               const user = event.target.value;
@@ -476,12 +465,12 @@ class App extends Component {
           /><br></br>
 
           <TextField type='password'
-            id = "pass"
+            id="pass"
             label="Password "
             InputProps={{
               className: classes.input
-            }}            
-            
+            }}
+
             defaultValue="Password"
             onChange={(event) => {
               const pass = event.target.value;
@@ -513,13 +502,11 @@ class App extends Component {
     const collection = showFiltered ? filteredData : collectionData;
     return (
       <div className="App">
-        <div className="Region" style={{ backgroundColor: 'black', marginTop: '10px' , marginLeft: '240px'}} >
-        <span className="currentValue">Selected Region :  {this.state.regionname}   </span><br></br>
-        <span className="currentValue">Url : {this.state.selectedRegionUrl}</span>
-
+        <div className="Region" style={{ backgroundColor: 'black', marginTop: '10px', display: 'flex', justifyContent: "center" }} >
+          <span style={{ color: 'grey', fontSize: '18px' }}>Selected Region :  {this.state.regionname}   </span>
         </div>
 
-        <div className="row" style={{ backgroundColor: 'black', marginTop: '62px' }}>
+        <div className="row" style={{ backgroundColor: 'black', marginTop: '10px' }}>
           {
             [CHART1, CHART2, CHART3].map(
               (chartNum) => {
@@ -598,11 +585,11 @@ class App extends Component {
           onClose={this.handleClose}
           message={<span id="message-id">{snackbarText}</span>}
         />
-        
+
         {this.renderLoginModal()}
-        
+
         {this.renderRegionModal()}
-      
+
       </div>
     );
   }
@@ -636,9 +623,9 @@ const styles = theme => ({
     fontSize: '16px'
   },
   input: {
-    backgroundColor:'#404040'
-    },
-    
+    backgroundColor: '#404040'
+  },
+
 });
 
 export default withStyles(styles)(App);
