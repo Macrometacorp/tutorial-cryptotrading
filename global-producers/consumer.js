@@ -44,24 +44,12 @@ async function delete_first_n_trades_from_c8db(c8_cluster, trade_doc_count_delet
     }
 
     if (!trade_doc_count_delete) {
-        console.warn("Number of trade documents to delete is null or empty! Must be an integer > 0")
+        console.warn("Number of trade documents to delete is null or empty! Must be an integer > 0");
     }
 
-    let delint = Number(trade_doc_count_delete)
-    let quotecurr = get_quotecurrency(c8_cluster.split(".macrometa.io")[0])
-    let ql;
-    if (quotecurr) {
-        //Filter earliest n docs for quotecurr and delete them
-        console.log("DELETE: Filter oldest docs for fiat currency: " + quotecurr)
-        ql = "FOR doc IN " + TRADES_COLLECTION + " FILTER doc.symbol == \"BTC/" + quotecurr + "\" SORT doc._key ASC LIMIT " + delint.toString() + " REMOVE { _key: doc._key } IN " + TRADES_COLLECTION + " RETURN doc"
-    }
+    let delint = Number(trade_doc_count_delete);
 
-    else {
-        //Fallback - delete earliest n docs without first filtering for quotecurr
-        console.log("DELETE: WARNING : Could not determine fiat currency for region. Fallback to deleting non-filtered oldest.")
-        ql = "FOR doc IN " + TRADES_COLLECTION + " SORT doc._key ASC LIMIT " + delint.toString() + " REMOVE { _key: doc._key } IN " + TRADES_COLLECTION + " RETURN doc"
-    }
-
+    let ql = "FOR doc IN " + TRADES_COLLECTION + " SORT doc._key ASC LIMIT " + delint.toString() + " REMOVE { _key: doc._key } IN " + TRADES_COLLECTION + " RETURN doc"
 
     // Remove the first 'delint' documents from the collection.
     // We first sort by ascending order of key, then limit the
