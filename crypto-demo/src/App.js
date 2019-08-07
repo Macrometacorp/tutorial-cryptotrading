@@ -220,8 +220,11 @@ class App extends Component {
       if (payload !== 'noop') {
         const decodedMsg = atob(payload);
         const response = decodedMsg && JSON.parse(decodedMsg);
-        const collectionData = [...this.state.collectionData];
-        collectionData.pop();
+        let collectionData = [...this.state.collectionData];
+        if (collectionData.length > 50) {
+          //remove more than 20 data points
+          collectionData = collectionData.slice(0, 50);
+        }
         const newElem = makeCollectionData(response);
         newElem && this.setState({ collectionData: [newElem, ...collectionData] });
       }
