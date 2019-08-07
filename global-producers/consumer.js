@@ -38,7 +38,7 @@ async function insert_trade_into_c8db(cluster, tradeobj, fabric) {
     console.log("Saved trade info to C8DB at '" + c8url + "': " + (doc).toString());
 }
 
-async function delete_first_n_trades_from_c8db(c8_cluster, trade_doc_count_delete, fabricName, fabric) {
+async function delete_first_n_trades_from_c8db(c8_cluster, trade_doc_count_delete, fabric) {
     if (c8_cluster === undefined || c8_cluster === null) {
         console.warn("ERROR: cluster is null or empty!")
     }
@@ -68,7 +68,7 @@ async function delete_first_n_trades_from_c8db(c8_cluster, trade_doc_count_delet
     // output to the first 'delint' records, then issue the remove.
     // The QL output will be the deleted docs, in case you want to
     // use them for something.
-    console.log("Deleting first " + delint.toString() + " documents from collection '" + TRADES_COLLECTION + "' in the database: " + fabricName)
+    console.log("Deleting first " + delint.toString() + " documents from collection '" + TRADES_COLLECTION)
     let result = await fabric.query(ql)
     return result
 }
@@ -164,7 +164,7 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
                 // We will remove the first 'trade_doc_count_delete' records from the DB.
                 if (tradectr >= trade_doc_count_max) {
                     try {
-                        await delete_first_n_trades_from_c8db(regionUrl, trade_doc_count_delete, fabricName, fabric);
+                        await delete_first_n_trades_from_c8db(regionUrl, trade_doc_count_delete, fabric);
                         // After the first set of deletes, we set max to the number of docs we
                         // deleted the firs time, to keep the number of docs in the DB constant.
                         trade_doc_count_max = trade_doc_count_delete
