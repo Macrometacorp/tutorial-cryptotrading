@@ -1,6 +1,6 @@
 
 var Fabric = require('jsc8');
-const { regionUrl, tenantName, userName, password, fabricName, AWSREGION_QUOTECURR_MAP } = require("./Config.js");
+const { regionUrl, tenantName, userName, password, fabricName } = require("./Config.js");
 const { consumeData } = require("./consumer.js");
 const { produceData } = require("./producer.js");
 // BEGIN GLOBAL CONSTANTS 
@@ -31,20 +31,11 @@ const AVGQUOTES_TOPIC_PREFIX = "crypto-trader-quotes-avg-";
 
 let fabric;
 
-function getUrlMappedRegion(regionUrl) {
-    const keys = Object.keys(AWSREGION_QUOTECURR_MAP);
-    const foundKey = keys.find(key => regionUrl.includes(key));
-    return foundKey ? AWSREGION_QUOTECURR_MAP[foundKey] : false;
-}
-
 async function init() {
     fabric = new Fabric(`https://${regionUrl}`);
     await fabric.login(tenantName, userName, password);
     fabric.useTenant(tenantName);
     fabric.useFabric(fabricName);
-
-    const regionName = getUrlMappedRegion(regionUrl);
-    if (!regionName) throw "Mapping to region not found";
 
     const keys = Object.keys(QUOTECURR_EXCHANGE_MAP);
     for (let key of keys) {
@@ -59,7 +50,7 @@ async function init() {
         await obj.maStream.createStream();
 
         const onOpenCallback = () => {
-            produceData(key, obj, regionUrl, regionName);
+            produceData(key, obj, regionUrl);
         }
 
         await consumeData(obj, onOpenCallback, regionUrl, fabric);

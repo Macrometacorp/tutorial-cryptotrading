@@ -36,12 +36,12 @@ async function get_ticker(exchange, quote_currency, regionName) {
     return JSON.stringify(quote_dict)
 }
 
-async function produceData(key, value, regionUrl, regionName) {
+async function produceData(key, value, regionUrl) {
     const exchangeObj = await init_exchange(value);
-    const { quoteStream } = value;
+    const { quoteStream, region } = value;
 
     setInterval(async () => {
-        let ticker = await get_ticker(exchangeObj, key, regionName);
+        let ticker = await get_ticker(exchangeObj, key, region);
         quoteStream.producer(ticker, regionUrl);
     }, delay);
 }

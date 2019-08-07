@@ -25,17 +25,17 @@ async function insert_trade_into_c8db(cluster, tradeobj, fabric) {
     }
 
     //Insert the trade
-    let doc = {}
-    doc.exchange = tradeobj.exchange
-    doc.symbol = tradeobj.symbol
-    doc.quote_region = tradeobj.quote_region
-    doc.trade_strategy = tradeobj.trade_strategy
-    doc.timestamp = tradeobj.timestamp
-    doc.trade_type = tradeobj.trade_type
-    doc.trade_price = tradeobj.trade_price
-    doc.trade_location = cluster
-    collection.save(doc)
-    console.log("Saved trade info to C8DB at '" + c8url + "': " + (doc).toString())
+    let doc = {};
+    doc.exchange = tradeobj.exchange;
+    doc.symbol = tradeobj.symbol;
+    doc.quote_region = tradeobj.quote_region;
+    doc.trade_strategy = tradeobj.trade_strategy;
+    doc.timestamp = tradeobj.timestamp;
+    doc.trade_type = tradeobj.trade_type;
+    doc.trade_price = tradeobj.trade_price;
+    doc.trade_location = cluster;
+    collection.save(doc);
+    console.log("Saved trade info to C8DB at '" + c8url + "': " + (doc).toString());
 }
 
 async function delete_first_n_trades_from_c8db(c8_cluster, trade_doc_count_delete, fabricName, fabric) {
