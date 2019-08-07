@@ -17,9 +17,8 @@ async function init_exchange(value) {
     return exchange;
 }
 
-async function get_ticker(exchange, quote_currency, quoteregion) {
+async function get_ticker(exchange, quote_currency, regionName) {
     if (!exchange) throw "ERROR : exchange is null or empty!";
-    if (!base_currency) throw "ERROR: symbol is null or empty!";
 
     let symbol = `${base_currency}/${quote_currency}`;
     let ticker = await exchange.fetch_ticker(symbol);
@@ -28,7 +27,7 @@ async function get_ticker(exchange, quote_currency, quoteregion) {
     let ts = Math.floor(Date.now() / 1000);
 
     let quote_dict = {}
-    quote_dict.region = quoteregion
+    quote_dict.region = regionName
     quote_dict.exchange = exchange.name
     quote_dict.symbol = symbol
     quote_dict.timestamp = ts
@@ -37,12 +36,12 @@ async function get_ticker(exchange, quote_currency, quoteregion) {
     return JSON.stringify(quote_dict)
 }
 
-async function produceData(key, value, regionUrl) {
+async function produceData(key, value, regionUrl, regionName) {
     const exchangeObj = await init_exchange(value);
     const { quoteStream } = value;
 
     setInterval(async () => {
-        let ticker = await get_ticker(exchangeObj, key, regionUrl);
+        let ticker = await get_ticker(exchangeObj, key, regionName);
         quoteStream.producer(ticker, regionUrl);
     }, delay);
 }
