@@ -83,7 +83,7 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
             // start the producer for this stream
             onOpenCallback();
         },
-        onmessage: (msg) => {
+        onmessage: async (msg) => {
             try {
                 let decode_msg_obj = JSON.parse(msg);
                 let buff = new Buffer(decode_msg_obj.payload, 'base64');
@@ -131,35 +131,40 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
                     tradeobj["trade_type"] = "BUY";
                     tradeobj["trade_price"] = close;
 
-                    insert_trade_into_c8db(regionUrl, tradeobj, fabric);
+                    await insert_trade_into_c8db(regionUrl, tradeobj, fabric);
                     tradectr += 1  // Increment the number of trades we put into the DB
                     console.log("Buy Trade: " + JSON.stringify(tradeobj));
                 }
 
                 // Do we need to SELL?
 
-                if (ma_history.length > 3 &&
+                else if (ma_history.length > 3 &&
                     close_history[close_history.length - 1] < ma_history[ma_history.length - 1] &&
                     close_history[close_history.length - 2] > ma_history[ma_history.length - 2]) {
-                    let tradeobj = {}
-                    tradeobj["_key"] = "SELL-" + timestamp.toString()
-                    tradeobj["exchange"] = exchange
-                    tradeobj["symbol"] = symbol
-                    tradeobj["quote_region"] = quoteregion
-                    tradeobj["trade_strategy"] = "MA Trading"
-                    tradeobj["timestamp"] = timestamp
-                    tradeobj["trade_type"] = "SELL"
-                    tradeobj["trade_price"] = close
-                    c8utils.insert_trade_into_c8db(c8_cluster, tradeobj)
-                    tradectr += 1  // Increment the number of trades we put into the DB
-                    console.log("Sell Trade: {}".format(tradeobj))
+                    let tradeobj = {};
+                    tradeobj["_key"] = "SELL-" + timestamp.toString();
+                    tradeobj["exchange"] = exchange;
+                    tradeobj["symbol"] = symbol;
+                    tradeobj["quote_region"] = quoteregion;
+                    tradeobj["trade_strategy"] = "MA Trading";
+                    tradeobj["timestamp"] = timestamp;
+                    tradeobj["trade_type"] = "SELL";
+                    tradeobj["trade_price"] = close;
+                    try {
+                        await insert_trade_into_c8db(regionUrl, tradeobj, fabric);
+                        tradectr += 1;  // Increment the number of trades we put into the DB
+                        console.log(`Sell Trade: ${JSON.stringify(tradeobj)}`);
+                    } catch (e) {
+                        console.log("Error in inserting to collection", e);
+                    }
+
                 }
 
                 // Check if we need to clean out old trades in the DB.
                 // We will remove the first 'trade_doc_count_delete' records from the DB.
                 if (tradectr >= trade_doc_count_max) {
                     try {
-                        delete_first_n_trades_from_c8db(regionUrl, trade_doc_count_delete, fabricName, fabric);
+                        await delete_first_n_trades_from_c8db(regionUrl, trade_doc_count_delete, fabricName, fabric);
                         // After the first set of deletes, we set max to the number of docs we
                         // deleted the firs time, to keep the number of docs in the DB constant.
                         trade_doc_count_max = trade_doc_count_delete
