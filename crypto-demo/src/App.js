@@ -182,7 +182,7 @@ class App extends Component {
         this.setState({ collectionData: makeCollectionArray(result) });
       },
       error: (err) => {
-        this.openSnackBar('Failed to get document data');
+        (err.status !== 404) && this.openSnackBar('Failed to get document data');
         console.log("Failed to get document data ", err);
       },
       cache: false,
