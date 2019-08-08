@@ -56,13 +56,14 @@ export default Config;
 The tenant, user name and password to connect to the provided federation URL will be asked by the UI directly.
 
 # How to run app locally
+> NOTE: This step is just for running the UI locally. The actual app is deployed on an AWS S3 Bucket. For the steps on S3 goto the `How to deploy app on S3` section.
 
 Go to crypto-demo and run the following
 If `node_modules` is not there, execute `npm install`.
 
 Once all the node modules have been installed execute `npm start` to start the development server. This will start a local development server on `localhost:<some_port>`. 
 
-# How to deploy app on s3
+# How to deploy app on S3
 
 Do to crypto-demo and run `npm run build`.
 This will create a folder build.
@@ -94,7 +95,7 @@ Now goto the `Properties` tab in the aws console for this bucket and open `Stati
 
 # Already deployed demo
 
-Go to `http://qa1.crypto.demo.s3-website.us-east-2.amazonaws.com/` 
+Go to `http://qa1.crypto.demo.s3-website.us-east-2.amazonaws.com` 
 
 Login using demo, root, demo and fabric _system.
 
