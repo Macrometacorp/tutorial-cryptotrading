@@ -3,27 +3,18 @@ import logo from './logo.svg';
 import './App.css';
 import Plot from 'react-plotly.js';
 import _ from 'lodash';
-import Config from './Config';
+import Fabric from 'jsc8';
+
 import {
   makeChartData,
-  getWsUrls,
-  getDocumentWsUrls,
   getChartData,
   getCurrentValue,
   makeCollectionArray,
   makeCollectionData,
   CONSTANTS,
-  makeRegionData,
-  region
+  getQuoteStreamTopicName,
+  getCollectionTopicName,
 } from './utils';
-
-import{
-  custom_consumer
-}from './c8utils'
-
-
-
-import $ from 'jquery';
 
 import Table from '@material-ui/core/Table';
 
@@ -46,8 +37,6 @@ import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 
-
-
 const { CHART1, CHART2, CHART3, BLUE, GREEN, BACKGROUND } = CONSTANTS;
 
 class App extends Component {
@@ -62,51 +51,38 @@ class App extends Component {
         close: [],
         ma: [],
         timestamp: [],
-        wsUrls: '',
-        consumer: undefined,
-        producer: undefined
+        stream: undefined
       },
       [CHART2]: {
         name: 'EUR',
         close: [],
         ma: [],
         timestamp: [],
-        wsUrls: '',
-        consumer: undefined,
-        producer: undefined
+        stream: undefined
       },
       [CHART3]: {
         name: 'JPY',
         close: [],
         ma: [],
         timestamp: [],
-        wsUrls: '',
-        consumer: undefined,
-        producer: undefined
+        stream: undefined
       },
       collectionData: [],
       filteredData: [],
       showSnackbar: false,
       snackbarText: '',
       showFiltered: false,
-      documentWs: {
-        wsUrls: '',
-        producer: undefined,
-        consumer: undefined
-      },
-      selectedRegion: {
-        label: null,
-        value: null
-      },
+      documentStream: null,
       regionModal: false,
-      availableRegions: makeRegionData(Config),
-      selectedRegionUrl: '',
+      availableRegions: null,
+      selectedRegionUrl: null,
       loginModal: true,
-      tenant: '',
+      federationUrl: "try.macrometa.io",
+      tenant: 'guest',
       fabric: '_system',
-      username: '',
-      password: '',
-      regionname: ''
+      username: 'root',
+      password: 'guest',
+      selectedRegionName: null
     };
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
     this.establishConnection = this.establishConnection.bind(this);
@@ -114,28 +90,28 @@ class App extends Component {
     this.openSnackBar = this.openSnackBar.bind(this);
     this.handleSearchTextChange = this.handleSearchTextChange.bind(this);
     this.jwtToken = undefined;
+    this.fabric = undefined;
   }
 
 
   componentDidMount() {
     this.updateWindowDimensions();
     window.addEventListener('resize', this.updateWindowDimensions)
-    
+
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.updateWindowDimensions);
 
     [CHART1, CHART2, CHART3].forEach(chartNum => {
-      this.state[chartNum].consumer.close();
-      this.state[chartNum].producer.close();
+      this.state[chartNum].stream.closeConnections();
     });
 
-    this.state.documentWs.producer.close();
-    this.state.documentWs.consumer.close();
+    this.state.documentStream.closeConnections();
+
   }
 
-  init() {
+  initData() {
     const charts = [CHART1, CHART2, CHART3].map(this.establishConnection);
     this.setState({
       [CHART1]: charts[CHART1],
@@ -146,145 +122,105 @@ class App extends Component {
     this.establishDocumentConnection();
   }
 
-  login() {
-    const data = {
-      tenant: this.state.tenant,
-      username: this.state.username,
-      password: this.state.password
-
+  async selectedRegionLogin() {
+    this.fabric.close();
+    const { selectedRegionUrl, tenant, username, password, fabric } = this.state;
+    this.fabric = new Fabric(`https://${selectedRegionUrl}`);
+    try {
+      await this.fabric.login(tenant, username, password);
+      this.fabric.useTenant(tenant);
+      this.fabric.useFabric(fabric);
+      this.initData();
+      // start streams and get collection data
+    } catch (e) {
+      this.openSnackBar('Failed to login with selected region.');
     }
-   
-    const url = `https://${this.state.selectedRegionUrl}/_tenant/${this.state.tenant}/_fabric/${this.state.fabric}/_open/auth`;
-    $.ajax({
-      url,
-      method: 'POST',
-      data: JSON.stringify(data),
-      dataType: 'json',
-      success: (data) => {
-        this.jwtToken = data.jwt;
-        this.ajaxSetup();
-        this.init();
-      },
-      error: () => this.openSnackBar('Auth failed.')
-    })
   }
 
-  ajaxSetup() {
-    $.ajaxSetup({
-      headers: {
-        Authorization: `bearer ${this.jwtToken}`
-      }
-    });
+  async login() {
+    const { federationUrl, tenant, username, password, fabric } = this.state;
+    this.fabric = new Fabric(`https://${federationUrl}`);
+    try {
+      await this.fabric.login(tenant, username, password);
+      this.fabric.useTenant(tenant);
+      this.fabric.useFabric(fabric);
+      const tenantHandler = this.fabric.tenant(tenant);
+
+      // get tenant locations to select from
+      const locations = await tenantHandler.getTenantEdgeLocations();
+      const { dcInfo } = locations[0];
+      this.setState({ availableRegions: dcInfo, regionModal: true });
+    } catch (e) {
+      this.openSnackBar('Auth failed.');
+    }
   }
 
-  getDocumentData() {
-    $.ajax({
-      url: `https://${this.state.selectedRegionUrl}/_tenant/${this.state.tenant}/_fabric/${this.state.fabric}/cursor`,
-      type: 'POST',
-      contentType: 'text/plain',
-      processData: false,
-      success: (data) => {
-        const { result } = data;
-        this.setState({ collectionData: makeCollectionArray(result) });
-      },
-      error: (err) => {
-        this.openSnackBar('Failed to get document data');
-        console.log("Failed to get document data ", err);
-      },
-      cache: false,
-      data: JSON.stringify({
-        "query": "FOR trade IN trades SORT trade.timestamp DESC LIMIT 20 RETURN trade"
-      })
-    });
+  async getDocumentData() {
+    try {
+      const cursor = await this.fabric.query("FOR trade IN trades SORT trade.timestamp DESC LIMIT 20 RETURN trade");
+      const result = await cursor.all();
+      this.setState({ collectionData: makeCollectionArray(result) });
+    } catch (e) {
+      e.status !== 404 && this.openSnackBar('Could not get document data');
+    }
+
   }
 
   establishDocumentConnection() {
-    const newDocumentWs = _.cloneDeep(this.state.documentWs);
-    const { producer, consumer } = newDocumentWs.wsUrls;
 
-    //consumer
-    newDocumentWs.consumer = new WebSocket(consumer);
-
-    newDocumentWs.consumer.onopen = () => {
-      console.log("WebSocket is open for trades");
-    }
-
-    newDocumentWs.consumer.onerror = () => {
-      this.openSnackBar('Failed to establish WS connection for trades');
-      console.log('Failed to establish WS connection for trades');
-    }
-
-    newDocumentWs.consumer.onclose = (event) => {
-      console.log('Closing WS connection for trades');
-    }
-
-    newDocumentWs.consumer.onmessage = (message) => {
-      const receiveMsg = message.data && JSON.parse(message.data);
-      const ackMsg = { "messageId": receiveMsg.messageId };
-      newDocumentWs.consumer.send(JSON.stringify(ackMsg));
-      const { payload } = receiveMsg;
-      if (payload !== 'noop') {
-        const decodedMsg = atob(payload);
-        const response = decodedMsg && JSON.parse(decodedMsg);
-        const collectionData = [...this.state.collectionData];
-        collectionData.pop();
-        const newElem = makeCollectionData(response);
-        newElem && this.setState({ collectionData: [newElem, ...collectionData] });
+    const topicName = getCollectionTopicName();
+    const stream = this.fabric.stream(topicName, true);
+    stream.consumer(`${topicName}-sub`, {
+      onopen: () => console.log("WebSocket is open for trades"),
+      onclose: () => console.log('Closing WS connection for trades'),
+      onerror: () => {
+        this.openSnackBar('Failed to establish WS connection for trades');
+        console.log('Failed to establish WS connection for trades');
+      },
+      onmessage: message => {
+        const receiveMsg = JSON.parse(message);
+        const { payload } = receiveMsg;
+        if (receiveMsg && payload) {
+          const decodedMsg = atob(payload);
+          const response = decodedMsg && JSON.parse(decodedMsg);
+          let collectionData = [...this.state.collectionData];
+          if (collectionData.length > 20) {
+            //remove more than 20 data points
+            collectionData = collectionData.slice(0, 20);
+          }
+          const newElem = makeCollectionData(response);
+          newElem && this.setState({ collectionData: [newElem, ...collectionData] });
+        }
       }
-    };
-
-    //producer
-    newDocumentWs.producer = new WebSocket(producer);
-    newDocumentWs.producer.onclose = (event) => console.log("Document producer closed", event);
-    newDocumentWs.producer.onopen = () => {
-      //publish meaningless data every 30000ms to keep the connection alive
-      setInterval(() => {
-        newDocumentWs.producer.send(JSON.stringify({ 'payload': 'noop' }))
-      }, 30000);
-    }
+    }, this.state.selectedRegionUrl);
+    this.setState({ documentStream: stream });
   }
 
   establishConnection(chartNum) {
     const newChart = _.cloneDeep(this.state[chartNum]);
-
-    //consumer
-    newChart.consumer = new WebSocket(newChart.wsUrls.consumer);
-
-    newChart.consumer.onopen = () => {
-      console.log("WebSocket is open for ", newChart.name);
-    }
-
-    newChart.consumer.onerror = () => {
-      this.openSnackBar('Failed to establish WS connection');
-      console.log('Failed to establish WS connection');
-    }
-
-    newChart.consumer.onclose = () => {
-      console.log('Closing WS connection for ', this.state[chartNum].name);
-    }
-
-    newChart.consumer.onmessage = (message) => {
-      const receiveMsg = message.data && JSON.parse(message.data);
-      const ackMsg = { "messageId": receiveMsg.messageId };
-      newChart.consumer.send(JSON.stringify(ackMsg));
-      const { payload } = receiveMsg;
-      if (payload !== 'noop') {
-        const decodedMsg = atob(payload);
-        const response = decodedMsg && JSON.parse(decodedMsg);
-        console.log("CHART CONSUMER MSG:" , response);
-        this.setState({ [chartNum]: makeChartData(response, this.state[chartNum]) });
+    const { name } = this.state[chartNum];
+    const streamTopic = getQuoteStreamTopicName(name);
+    const stream = this.fabric.stream(streamTopic, false);
+    stream.consumer(`${name}-sub`, {
+      onerror: () => {
+        this.openSnackBar('Failed to establish WS connection');
+        console.log(`Failed to establish WS connection for ${streamTopic}`);
+      },
+      onclose: () => console.log(`Closing WS connection for ${streamTopic}`),
+      onopen: () => console.log(`Connection open for ${streamTopic}`),
+      onmessage: (message) => {
+        const receiveMsg = JSON.parse(message);
+        const { payload } = receiveMsg;
+        if (receiveMsg && payload) {
+          const decodedMsg = atob(payload);
+          const response = decodedMsg && JSON.parse(decodedMsg);
+          console.log("CHART CONSUMER MSG:", response);
+          this.setState({ [chartNum]: makeChartData(response, this.state[chartNum]) });
+        }
       }
-    };
+    }, this.state.selectedRegionUrl);
 
-    //producer
-    newChart.producer = new WebSocket(newChart.wsUrls.producer);
-    newChart.producer.onclose = (event) => console.error("Producer WS connection closed", event);
-    newChart.producer.onopen = () => {
-      //publish meaningless data every 30000ms to keep the connection alive
-      setInterval(() => {
-        newChart.producer.send(JSON.stringify({ 'payload': 'noop' }))
-      }, 30000);
-    }
+    newChart.stream = stream;
 
     return newChart;
   }
@@ -382,24 +318,6 @@ class App extends Component {
     );
   }
 
-  handleModalClose() {
-    const { selectedRegionUrl } = this.state;
-    const newState = _.cloneDeep(this.state);
-    newState[CHART1].wsUrls = getWsUrls("USD", selectedRegionUrl, this.state.tenant, this.state.fabric);
-    newState[CHART2].wsUrls = getWsUrls("EUR", selectedRegionUrl, this.state.tenant, this.state.fabric);
-    newState[CHART3].wsUrls = getWsUrls("JPY", selectedRegionUrl, this.state.tenant, this.state.fabric);
-    newState.documentWs.wsUrls = getDocumentWsUrls(selectedRegionUrl, this.state.tenant, this.state.fabric);
-    newState.regionModal = false;
-    this.setState(newState, () => {
-      this.state.regionname = region(selectedRegionUrl, Config  )
-
-      custom_consumer(selectedRegionUrl, this.state.tenant, this.state.username, this.state.password, this.state.fabric);
-      this.login();
-
-
-    });
-  }
-
   renderRegionModal() {
     const { regionModal, availableRegions, selectedRegionUrl } = this.state;
     return (
@@ -410,18 +328,25 @@ class App extends Component {
         <DialogTitle id="form-dialog-title">Select Region:</DialogTitle>
         <DialogContent>
           <RadioGroup
-            onChange={event => this.setState({ selectedRegionUrl: event.target.value })}
+            onChange={event => {
+              const { target: { value, labels } } = event;
+              this.setState({ selectedRegionUrl: value, selectedRegionName: labels[0].outerText });
+            }}
             value={selectedRegionUrl}
           >
             {
-              availableRegions.map(region => <FormControlLabel key={region.label} value={region.value} control={<Radio />} label={region.label} />)
+              availableRegions.map(region => {
+                const { locationInfo: { city, countrycode }, tags: { url } } = region;
+                const label = `${city}, ${countrycode}`;
+                return <FormControlLabel key={label} value={url} control={<Radio />} label={label} />
+              })
             }
           </RadioGroup>
         </DialogContent>
         <DialogActions>
           <Button
             disabled={!selectedRegionUrl}
-            onClick={() => this.handleModalClose()}
+            onClick={() => this.setState({ regionModal: false }, () => { this.selectedRegionLogin() })}
             size="small" variant="text" color="primary">
             <span className="actions">CONFIRM</span>
           </Button>
@@ -430,10 +355,8 @@ class App extends Component {
     )
   }
 
-  
-
   renderLoginModal() {
-   
+
     let { loginModal } = this.state;
     const { classes } = this.props;
 
@@ -442,49 +365,76 @@ class App extends Component {
         fullWidth
         open={loginModal}
       >
-        <DialogTitle id="form-dialog-title"> Enter Tenant and Credentials:</DialogTitle>
-        <DialogContent>
-        
+        <DialogTitle id="form-dialog-title"> Please login with defaults or use your own account:</DialogTitle>
+        <DialogContent style={{ display: 'flex', flexDirection: 'column', maxWidth: '300px' }}>
+
           <TextField
             InputProps={{
               className: classes.input
-            }}            
-            label = "Tenant"
-            defaultValue="Enter Tenant Name"
+            }}
+            label="Federation URL"
+            defaultValue={this.state.federationUrl}
 
             onChange={(event) => {
-              const newtenant = event.target.value;
-              this.setState({ tenant: newtenant });
+              const federationUrl = event.target.value;
+              this.setState({ federationUrl });
             }}
             margin="normal"
-          /><br></br>
+          />
+
+          <TextField
+            InputProps={{
+              className: classes.input
+            }}
+            label="Tenant"
+            defaultValue={this.state.tenant}
+
+            onChange={(event) => {
+              const tenant = event.target.value;
+              this.setState({ tenant });
+            }}
+            margin="normal"
+          />
 
           <TextField
             label="User"
             InputProps={{
               className: classes.input
-            }}            
-            
-            defaultValue="Enter User Name"
+            }}
+
+            defaultValue={this.state.username}
             onChange={(event) => {
-              const user = event.target.value;
-              this.setState({ username: user });
+              const username = event.target.value;
+              this.setState({ username });
 
             }}
             margin="normal"
-          /><br></br>
+          />
 
-          <TextField type='password'
-            id = "pass"
-            label="Password "
+          <TextField
             InputProps={{
               className: classes.input
-            }}            
-            
-            defaultValue="Password"
+            }}
+            label="Fabric"
+            defaultValue={this.state.fabric}
+
             onChange={(event) => {
-              const pass = event.target.value;
-              this.setState({ password: pass });
+              const fabric = event.target.value;
+              this.setState({ fabric });
+            }}
+            margin="normal"
+          />
+
+          <TextField type='password'
+            id="pass"
+            label="Password"
+            defaultValue={this.state.password}
+            InputProps={{
+              className: classes.input
+            }}
+            onChange={(event) => {
+              const password = event.target.value;
+              this.setState({ password });
 
             }}
             margin="normal"
@@ -495,8 +445,7 @@ class App extends Component {
           <Button
             onClick={() => this.setState({
               loginModal: false,
-              regionModal: true
-            })}
+            }, () => { this.login() })}
             size="small" variant="text" color="primary">
             <span className="actions">CONFIRM</span>
           </Button>
@@ -505,20 +454,17 @@ class App extends Component {
     )
   }
 
-
   render() {
     const { showFiltered, collectionData, filteredData, showSnackbar, snackbarText } = this.state;
     const { classes } = this.props;
     const collection = showFiltered ? filteredData : collectionData;
     return (
       <div className="App">
-        <div className="Region" style={{ backgroundColor: 'black', marginTop: '10px' , marginLeft: '240px'}} >
-        <span className="currentValue">Selected Region :  {this.state.regionname}   </span><br></br>
-        <span className="currentValue">Url : {this.state.selectedRegionUrl}</span>
-
+        <div className="Region" style={{ backgroundColor: 'black', marginTop: '10px', display: 'flex', justifyContent: "center" }} >
+          <span style={{ color: 'grey', fontSize: '18px' }}>Selected Region :  {this.state.selectedRegionName}   </span>
         </div>
 
-        <div className="row" style={{ backgroundColor: 'black', marginTop: '62px' }}>
+        <div className="row" style={{ backgroundColor: 'black', marginTop: '10px' }}>
           {
             [CHART1, CHART2, CHART3].map(
               (chartNum) => {
@@ -597,16 +543,15 @@ class App extends Component {
           onClose={this.handleClose}
           message={<span id="message-id">{snackbarText}</span>}
         />
-        
+
         {this.renderLoginModal()}
-        
-        {this.renderRegionModal()}
-      
+
+        {this.state.regionModal && this.renderRegionModal()}
+
       </div>
     );
   }
 }
-
 
 const styles = theme => ({
   root: {
@@ -635,9 +580,10 @@ const styles = theme => ({
     fontSize: '16px'
   },
   input: {
-    backgroundColor:'#404040'
-    },
-    
+    backgroundColor: '#404040',
+    paddingLeft: '5px'
+  },
+
 });
 
 export default withStyles(styles)(App);

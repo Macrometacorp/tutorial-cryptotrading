@@ -22,19 +22,8 @@ const CHART_SIGNS = {
         getSymbolFromCurrency('JPY')
 }
 
-const getRandomInt = () => {
-    return Math.floor(Math.random() * Math.floor(99999));
-}
-
-export const getWsUrls = (name, url, tenant, fabric) => ({
-    producer: `wss://${url}/_ws/ws/v2/producer/persistent/${tenant}/c8global.${fabric}/crypto-trader-quotes-avg-${name}`,
-    consumer: `wss://${url}/_ws/ws/v2/consumer/persistent/${tenant}/c8global.${fabric}/crypto-trader-quotes-avg-${name}/crypto_${getRandomInt()}`
-});
-
-export const getDocumentWsUrls = (url, tenant, fabric) => ({
-    producer: `wss://${url}/_ws/ws/v2/producer/persistent/${tenant}/c8local.${fabric}/trades`,
-    consumer: `wss://${url}/_ws/ws/v2/consumer/persistent/${tenant}/c8local.${fabric}/trades/crypto_${getRandomInt()}`
-})
+export const getQuoteStreamTopicName = name => `crypto-trader-quotes-avg-${name}`;
+export const getCollectionTopicName = () => 'trades';
 
 const convertTimestampToDate = (timestamp) => {
     let unixTime = (typeof timestamp === 'string') ? parseFloat(timestamp) : timestamp;
@@ -140,26 +129,4 @@ export const makeCollectionData = (data) => {
 export const makeCollectionArray = (dataArr) => {
     const newDataArr = dataArr.map(makeCollectionData);
     return newDataArr;
-}
-
-export const makeRegionData = config => {
-    const keys = Object.keys(config);
-    const regionData = keys.reduce((acc, key) => {
-        const obj = { label: key.toUpperCase(), value: config[key] };
-        acc.push(obj);
-        return acc;
-    }, []);
-    return regionData;
-}
-
-export const region = (url ,config) => {
-    console.log("In region",url)
-    const keys = Object.keys(config);
-    for(let key of keys){
-        if(config[key] === url){
-            console.log("Key", key)
-            return key;
-        }
-    }
-
 }

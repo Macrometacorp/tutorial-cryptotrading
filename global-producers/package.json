@@ -1,0 +1,16 @@
+{
+  "name": "global-producers",
+  "version": "1.0.0",
+  "description": "Simple node application to publish data to global streams",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ccxt": "^1.18.1014",
+    "jsc8": "^0.12.3",
+    "jsnumpy": "^1.1.10"
+  }
+}

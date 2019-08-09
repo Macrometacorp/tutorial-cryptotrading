@@ -1,31 +1,65 @@
-This section is just for development purposes. **Don't use these steps to deploy the actual application.**
-
-# 1. Overview
+# Overview
 Demo to show a real-time trading dashboard for three different exchanges.
 
-# 2. Prerequisites
-Create a Collection using the tenant and fabric you wish to use.
-```js
-collection: trades
+The complete crypto-trading demo has two components:
+1. A node application
+2. A UI application written in Reactjs
+
+The node application is has three main files:
+1. `index.js` - initialisation work for jsc8 and C8 streams
+2. `producer.js` - gets the latest values from different exchanges and publishes them to their respective C8 streams
+3. `consumer.js` - Listens for the data published on the streams by `producer.js`. Based on that that data it calculates the `moving average` pushes it to a stream and caclulates if it is the right time to `BUY` or `SELL` and writes these suggestions to the `trades` collection.
+
+The UI then makes use of all the streams and the `trades` collection to show the charts and suggestions at one place.
+
+For each of the three exchanges `USD`, `EUR` and `JPY`, this demo makes use of the following streams:
+
+1. `cryto-trader-quotes-{USD/EUR/JPY}`
+2. `crypto-tader-quotes-avg-{USD/EUR/JPY}`
+
+
+The below steps will describe on how to deploy the node and UI application.
+
+# Prerequisites
+`nodejs` and `npm` must be installed on your system.
+
+# Running the node application locally
+
+The code for the node application lives inside the `global-producers` folder.
+
+The login details to be used by the node application are present at `global-producers/Config.js`.
+
+There you can edit the file in order to connect to different tenants and users.
 ```
-The federation url has to be provided in `Config.js` file in crypto-demo/src/. The user is asked to select one of these regions in the GUI.
-```js
-const Config = {
-    ashburn: "qa1-us-east-1.ops.aws.macrometa.io",
-    dublin: "qa1-eu-west-1.ops.aws.macrometa.io",
-    incheon: "qa1-ap-northeast-2.ops.aws.macrometa.io"
+module.exports = {
+    regionUrl: "try.macrometa.io",
+    tenantName: "guest",
+    userName: "root",
+    password: "guest",
+    fabricName: "_system"
 }
 ```
 
+Now to start the server locally just navigate to `global-producers` in your terminal. If `node_modules` folder is not there, execute `npm install`. Once it is done execute `node index.js`. This will start the server on your local machine.
 
-# 3. How to run app locally
+Once the server starts you should be able to see the charts in the UI deployed at `http://qa1.crypto.demo.s3-website.us-east-2.amazonaws.com`.
+
+
+# Running the UI
+
+The code for the UI lives in the `crypto-demo` folder.
+
+All the details for login will be asked by UI itself.
+
+# How to run app locally
+> NOTE: This step is just for running the UI locally. The actual app is deployed on an AWS S3 Bucket. For the steps on S3 goto the `How to deploy app on S3` section.
 
 Go to crypto-demo and run the following
 If `node_modules` is not there, execute `npm install`.
 
 Once all the node modules have been installed execute `npm start` to start the development server. This will start a local development server on `localhost:<some_port>`. 
 
-# 4. How to deploy app on s3
+# How to deploy app on S3
 
 Do to crypto-demo and run `npm run build`.
 This will create a folder build.
@@ -55,9 +89,9 @@ A sample `bucket policy` is:
 
 Now goto the `Properties` tab in the aws console for this bucket and open `Static website hosting` option. Then select the option `Use this bucket to host a website` and provide `index.html` for both `Index document` and `Error document` text fields. Click on save and the website is now live!
 
-# 5. Already deployed demo
+# Already deployed demo
 
-Go to `http://qa1.crypto.demo.s3-website.us-east-2.amazonaws.com/` 
+Go to `http://qa1.crypto.demo.s3-website.us-east-2.amazonaws.com` 
 
 Login using demo, root, demo and fabric _system.
 
