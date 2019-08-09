@@ -1,4 +1,4 @@
-# Overview
+# 1. Overview
 Demo to show a real-time trading dashboard for three different exchanges.
 
 The complete crypto-trading demo has two components:
@@ -20,38 +20,14 @@ For each of the three exchanges `USD`, `EUR` and `JPY`, this demo makes use of t
 
 The below steps will describe on how to deploy the node and UI application.
 
-# Prerequisites
+# 2. Prerequisites
+
+Clone tutorial-cryptotrading.
+
 `nodejs` and `npm` must be installed on your system.
 
-# Running the node application locally
+# 3. How to run app(UI) locally
 
-The code for the node application lives inside the `global-producers` folder.
-
-The login details to be used by the node application are present at `global-producers/Config.js`.
-
-There you can edit the file in order to connect to different tenants and users.
-```
-module.exports = {
-    regionUrl: "try.macrometa.io",
-    tenantName: "guest",
-    userName: "root",
-    password: "guest",
-    fabricName: "_system"
-}
-```
-
-Now to start the server locally just navigate to `global-producers` in your terminal. If `node_modules` folder is not there, execute `npm install`. Once it is done execute `node index.js`. This will start the server on your local machine.
-
-Once the server starts you should be able to see the charts in the UI deployed at `http://qa1.crypto.demo.s3-website.us-east-2.amazonaws.com`.
-
-
-# Running the UI
-
-The code for the UI lives in the `crypto-demo` folder.
-
-All the details for login will be asked by UI itself.
-
-# How to run app locally
 > NOTE: This step is just for running the UI locally. The actual app is deployed on an AWS S3 Bucket. For the steps on S3 goto the `How to deploy app on S3` section.
 
 Go to crypto-demo and run the following
@@ -59,7 +35,8 @@ If `node_modules` is not there, execute `npm install`.
 
 Once all the node modules have been installed execute `npm start` to start the development server. This will start a local development server on `localhost:<some_port>`. 
 
-# How to deploy app on S3
+
+# 4. How to deploy app(UI) on S3
 
 If `node_modules` is not there, execute `npm install`.
 
@@ -91,10 +68,35 @@ A sample `bucket policy` is:
 
 Now goto the `Properties` tab in the aws console for this bucket and open `Static website hosting` option. Then select the option `Use this bucket to host a website` and provide `index.html` for both `Index document` and `Error document` text fields. Click on save and the website is now live!
 
-# Already deployed demo
+
+
+# 5. How to run the Node app locally
+
+Note:- This needs to be run locally even if you want to see the running demo or you want to host the UI locally 
+
+The login details to be used by the node application are present at `global-producers/Config.js`.
+
+There you can edit the file in order to connect to different tenants and users.
+```
+module.exports = {
+    regionUrl: "try.macrometa.io",
+    tenantName: "guest",
+    userName: "root",
+    password: "guest",
+    fabricName: "_system"
+}
+```
+
+Now to start the server locally just navigate to `global-producers` in your terminal. If `node_modules` folder is not there, execute `npm install`. Once it is done execute `node index.js`. This will start the server on your local machine.
+
+Once the server starts you should be able to see the charts in the UI deployed at `http://qa1.crypto.demo.s3-website.us-east-2.amazonaws.com`.
+
+
+
+# 6.  Already deployed demo
 
 Go to `http://qa1.crypto.demo.s3-website.us-east-2.amazonaws.com` 
 
-Login using demo, root, demo and fabric _system.
+Login using your own credentials or the default ones.
 
-The graph will start loading data in a minutes time, after calculating SMA.
+Start the Node server locally to see the data on the Graphs.
