@@ -61,6 +61,8 @@ Once all the node modules have been installed execute `npm start` to start the d
 
 # How to deploy app on S3
 
+If `node_modules` is not there, execute `npm install`.
+
 Do to crypto-demo and run `npm run build`.
 This will create a folder build.
 
