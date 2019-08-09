@@ -12,6 +12,12 @@ The node application is has three main files:
 
 The UI then makes use of all the streams and the `trades` collection to show the charts and suggestions at one place.
 
+For each of the three exchanges `USD`, `EUR` and `JPY`, this demo makes use of the following streams:
+
+1. `cryto-trader-quotes-{USD/EUR/JPY}`
+2. `crypto-tader-quotes-avg-{USD/EUR/JPY}`
+
+
 The below steps will describe on how to deploy the node and UI application.
 
 # Prerequisites
@@ -26,10 +32,10 @@ The login details to be used by the node application are present at `global-prod
 There you can edit the file in order to connect to different tenants and users.
 ```
 module.exports = {
-    regionUrl: "qa1-europe-west4.eng1.macrometa.io",
-    tenantName: "demo",
+    regionUrl: "try.macrometa.io",
+    tenantName: "guest",
     userName: "root",
-    password: "demo",
+    password: "guest",
     fabricName: "_system"
 }
 ```
@@ -43,17 +49,7 @@ Once the server starts you should be able to see the charts in the UI deployed a
 
 The code for the UI lives in the `crypto-demo` folder.
 
-To change the federation that the UI connects to change the `Config.js` file, which exists in `crypto-demo/src/Config.js`
-```
-const Config = {
-    "Mumbai, IND": "qa1-asia-south1.eng1.macrometa.io",
-    "Eemshaven, NLD": "qa1-europe-west4.eng1.macrometa.io",
-    "The Dalles,US": "qa1-us-west1.eng1.macrometa.io"
-}
-export default Config;
-```
-
-The tenant, user name and password to connect to the provided federation URL will be asked by the UI directly.
+All the details for login will be asked by UI itself.
 
 # How to run app locally
 > NOTE: This step is just for running the UI locally. The actual app is deployed on an AWS S3 Bucket. For the steps on S3 goto the `How to deploy app on S3` section.
