@@ -130,8 +130,8 @@ class App extends Component {
       await this.fabric.login(tenant, username, password);
       this.fabric.useTenant(tenant);
       this.fabric.useFabric(fabric);
-      this.initData();
       // start streams and get collection data
+      this.initData();
     } catch (e) {
       this.openSnackBar('Failed to login with selected region.');
     }
