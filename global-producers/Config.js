@@ -1,7 +1,7 @@
 module.exports = {
-    regionUrl: "qa1-europe-west4.eng1.macrometa.io",
-    tenantName: "demo",
+    regionUrl: "try.macrometa.io",
+    tenantName: "guest",
     userName: "root",
-    password: "demo",
+    password: "guest",
     fabricName: "_system"
 }
