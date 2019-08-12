@@ -22,6 +22,12 @@ const CHART_SIGNS = {
         getSymbolFromCurrency('JPY')
 }
 
+export function getRandomInt() {
+
+    return Math.floor(Math.random() * Math.floor(99999));
+
+}
+
 export const getQuoteStreamTopicName = name => `crypto-trader-quotes-avg-${name}`;
 export const getCollectionTopicName = () => 'trades';
 

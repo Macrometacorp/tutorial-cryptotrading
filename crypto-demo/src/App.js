@@ -14,6 +14,7 @@ import {
   CONSTANTS,
   getQuoteStreamTopicName,
   getCollectionTopicName,
+  getRandomInt
 } from './utils';
 
 import Table from '@material-ui/core/Table';
@@ -124,26 +125,29 @@ class App extends Component {
 
   async selectedRegionLogin() {
     this.fabric.close();
-    const { selectedRegionUrl, tenant, username, password, fabric } = this.state;
+    const { selectedRegionUrl, tenant, username, password } = this.state;
+    const fabricName = this.state.fabric;
     this.fabric = new Fabric(`https://${selectedRegionUrl}`);
     try {
       await this.fabric.login(tenant, username, password);
       this.fabric.useTenant(tenant);
-      this.fabric.useFabric(fabric);
+      this.fabric.useFabric(fabricName);
       // start streams and get collection data
       this.initData();
     } catch (e) {
       this.openSnackBar('Failed to login with selected region.');
+      console.log(e);
     }
   }
 
   async login() {
-    const { federationUrl, tenant, username, password, fabric } = this.state;
+    const { federationUrl, tenant, username, password } = this.state;
+    const fabricName = this.state.fabric;
     this.fabric = new Fabric(`https://${federationUrl}`);
     try {
       await this.fabric.login(tenant, username, password);
       this.fabric.useTenant(tenant);
-      this.fabric.useFabric(fabric);
+      this.fabric.useFabric(fabricName);
       const tenantHandler = this.fabric.tenant(tenant);
 
       // get tenant locations to select from
@@ -152,6 +156,7 @@ class App extends Component {
       this.setState({ availableRegions: dcInfo, regionModal: true });
     } catch (e) {
       this.openSnackBar('Auth failed.');
+      console.log(e);
     }
   }
 
@@ -170,7 +175,7 @@ class App extends Component {
 
     const topicName = getCollectionTopicName();
     const stream = this.fabric.stream(topicName, true);
-    stream.consumer(`${topicName}-sub`, {
+    stream.consumer(`${topicName}-sub${getRandomInt()}`, {
       onopen: () => console.log("WebSocket is open for trades"),
       onclose: () => console.log('Closing WS connection for trades'),
       onerror: () => {
@@ -201,7 +206,7 @@ class App extends Component {
     const { name } = this.state[chartNum];
     const streamTopic = getQuoteStreamTopicName(name);
     const stream = this.fabric.stream(streamTopic, false);
-    stream.consumer(`${name}-sub`, {
+    stream.consumer(`${name}-sub${getRandomInt()}`, {
       onerror: () => {
         this.openSnackBar('Failed to establish WS connection');
         console.log(`Failed to establish WS connection for ${streamTopic}`);
