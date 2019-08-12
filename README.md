@@ -89,13 +89,13 @@ module.exports = {
 
 Now to start the server locally just navigate to `global-producers` in your terminal. If `node_modules` folder is not there, execute `npm install`. Once it is done execute `node index.js`. This will start the server on your local machine.
 
-Once the server starts you should be able to see the charts in the UI deployed at `http://qa1.crypto.demo.s3-website.us-east-2.amazonaws.com`.
+Once the server starts you should be able to see the charts in the UI deployed at `http://try.macrometa.crypto-trading.s3-website.us-east-2.amazonaws.com/`.
 
 
 
 # 6.  Already deployed demo
 
-Go to `http://qa1.crypto.demo.s3-website.us-east-2.amazonaws.com` 
+Go to `http://try.macrometa.crypto-trading.s3-website.us-east-2.amazonaws.com/` 
 
 Login using your own credentials or the default ones.
 
