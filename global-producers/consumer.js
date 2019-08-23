@@ -1,9 +1,9 @@
 var nj = require('jsnumpy');
 
 const ma_len = 10;
-let trade_doc_count_max = 50;
-const trade_doc_count_delete = 20;
-let tradectr = 0;
+let trade_doc_count_max = 20;
+const trade_doc_count_delete = 10;
+let tradectr = "";
 const TRADES_COLLECTION = "trades";
 
 async function insert_trade_into_c8db(cluster, tradeobj, fabric) {
@@ -38,7 +38,7 @@ async function insert_trade_into_c8db(cluster, tradeobj, fabric) {
     console.log("Saved trade info to C8DB at '" + c8url + "': " + (doc).toString());
 }
 
-async function delete_first_n_trades_from_c8db(c8_cluster, trade_doc_count_delete, fabric) {
+async function delete_first_n_trades_from_c8db(c8_cluster, fabric) {
     if (c8_cluster === undefined || c8_cluster === null) {
         console.warn("ERROR: cluster is null or empty!")
     }
@@ -47,21 +47,24 @@ async function delete_first_n_trades_from_c8db(c8_cluster, trade_doc_count_delet
         console.warn("Number of trade documents to delete is null or empty! Must be an integer > 0");
     }
 
-    let delint = Number(trade_doc_count_delete);
-
-    let ql = "FOR doc IN " + TRADES_COLLECTION + " SORT doc._key ASC LIMIT " + delint.toString() + " REMOVE { _key: doc._key } IN " + TRADES_COLLECTION + " RETURN doc"
+    let ql = "FOR doc IN " + TRADES_COLLECTION + " SORT doc._key ASC LIMIT " + trade_doc_count_delete.toString() + " REMOVE { _key: doc._key } IN " + TRADES_COLLECTION + " RETURN doc"
 
     // Remove the first 'delint' documents from the collection.
     // We first sort by ascending order of key, then limit the
     // output to the first 'delint' records, then issue the remove.
     // The QL output will be the deleted docs, in case you want to
     // use them for something.
-    console.log("Deleting first " + delint.toString() + " documents from collection '" + TRADES_COLLECTION)
+    console.log("Deleting first " + trade_doc_count_delete.toString() + " documents from collection '" + TRADES_COLLECTION)
     let result = await fabric.query(ql)
+ 
     return result
 }
 
 async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
+    let collectionhandle =  await fabric.collection('trades')
+    tradectr = await collectionhandle.count()
+    tradectr = tradectr.count
+   
     const close_history = [];
     const ma_history = [];
     const { quoteStream, region, exchange, maStream } = obj;
@@ -141,6 +144,7 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
                     try {
                         await insert_trade_into_c8db(regionUrl, tradeobj, fabric);
                         tradectr += 1;  // Increment the number of trades we put into the DB
+ 
                         console.log(`Sell Trade: ${JSON.stringify(tradeobj)}`);
                     } catch (e) {
                         console.log("Error in inserting to collection", e);
@@ -152,11 +156,11 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
                 // We will remove the first 'trade_doc_count_delete' records from the DB.
                 if (tradectr >= trade_doc_count_max) {
                     try {
-                        await delete_first_n_trades_from_c8db(regionUrl, trade_doc_count_delete, fabric);
+                        await delete_first_n_trades_from_c8db(regionUrl, fabric);
                         // After the first set of deletes, we set max to the number of docs we
                         // deleted the firs time, to keep the number of docs in the DB constant.
-                        trade_doc_count_max = trade_doc_count_delete
-                        tradectr = 0  // Reset tradectr back to 0
+                        tradectr = await collectionhandle.count() // Fetch the number of documents in the collection after deletion
+                        tradectr = tradectr.count 
                     }
                     catch (err) {
                         console.log("Error in deletion:" + err)

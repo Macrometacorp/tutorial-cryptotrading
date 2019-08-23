@@ -189,12 +189,13 @@ class App extends Component {
           const decodedMsg = atob(payload);
           const response = decodedMsg && JSON.parse(decodedMsg);
           let collectionData = [...this.state.collectionData];
+          const newElem = makeCollectionData(response);
+          collectionData = [newElem, ...collectionData];
           if (collectionData.length > 20) {
             //remove more than 20 data points
             collectionData = collectionData.slice(0, 20);
           }
-          const newElem = makeCollectionData(response);
-          newElem && this.setState({ collectionData: [newElem, ...collectionData] });
+          this.setState({ collectionData });
         }
       }
     }, this.state.selectedRegionUrl);
