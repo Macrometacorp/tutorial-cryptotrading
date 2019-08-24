@@ -190,13 +190,17 @@ class App extends Component {
           const response = decodedMsg && JSON.parse(decodedMsg);
           let collectionData = [...this.state.collectionData];
           const newElem = makeCollectionData(response);
+          if (newElem){
           collectionData = [newElem, ...collectionData];
+          }
           if (collectionData.length > 20) {
             //remove more than 20 data points
             collectionData = collectionData.slice(0, 20);
           }
           this.setState({ collectionData });
         }
+      
+      
       }
     }, this.state.selectedRegionUrl);
     this.setState({ documentStream: stream });
@@ -464,6 +468,7 @@ class App extends Component {
     const { showFiltered, collectionData, filteredData, showSnackbar, snackbarText } = this.state;
     const { classes } = this.props;
     const collection = showFiltered ? filteredData : collectionData;
+ 
     return (
       <div className="App">
         <div className="Region" style={{ backgroundColor: 'black', marginTop: '10px', display: 'flex', justifyContent: "center" }} >
