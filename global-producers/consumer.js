@@ -89,12 +89,13 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
                 var quoteregion = dec.region;
 
                 if (close && timestamp) {
-                    close_history.push(close);
+                    close_history.unshift(close);
                 }
 
                 //Compute & Publish SMA
                 if (close_history.length >= ma_len) {
                     ma_history.push(nj.mean(close_history));
+                    close_history.pop(close_history.length - ma_len)
 
                     let sma_dict = {};
                     sma_dict['region'] = quoteregion;
