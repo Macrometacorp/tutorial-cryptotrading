@@ -93,10 +93,10 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
                 }
 
                 //Compute & Publish SMA
-                if (close_history.length >= ma_len) {
+                if (close_history.length > ma_len) {
                     ma_history.push(nj.mean(close_history));
-                    diff = close_history.length - ma_len
-                    for(i=0; i<= diff; i++ ){
+                    var diff = close_history.length - ma_len
+                    for(i=0; i < diff; i++ ){
                         close_history.pop()
                     }
 
