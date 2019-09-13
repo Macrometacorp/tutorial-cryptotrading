@@ -134,7 +134,7 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
                     try {
                         await insert_trade_into_c8db(regionUrl, tradeobj, fabric);
                         tradectr += 1  // Increment the number of trades we put into the DB
-                        // console.log("Buy Trade: " + JSON.stringify(tradeobj));
+                        console.log("Buy Trade: " + JSON.stringify(tradeobj));
                     } catch (e) {
                         console.log("Error in inserting to collection", e);
                     }
@@ -152,7 +152,7 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
                         await insert_trade_into_c8db(regionUrl, tradeobj, fabric);
                         tradectr += 1;  // Increment the number of trades we put into the DB
 
-                        // console.log(`Sell Trade: ${JSON.stringify(tradeobj)}`);
+                        console.log(`Sell Trade: ${JSON.stringify(tradeobj)}`);
                     } catch (e) {
                         console.log("Error in inserting to collection", e);
                     }
