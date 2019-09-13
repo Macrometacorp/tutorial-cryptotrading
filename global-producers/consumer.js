@@ -1,4 +1,5 @@
 var nj = require('jsnumpy');
+var sma = require('sma');
 
 const ma_len = 10;
 let trade_doc_count_max = 20;
@@ -56,15 +57,15 @@ async function delete_first_n_trades_from_c8db(c8_cluster, fabric) {
     // use them for something.
     console.log("Deleting first " + trade_doc_count_delete.toString() + " documents from collection '" + TRADES_COLLECTION)
     let result = await fabric.query(ql)
- 
+
     return result
 }
 
 async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
-    let collectionhandle =  await fabric.collection('trades')
+    let collectionhandle = await fabric.collection('trades')
     tradectr = await collectionhandle.count()
     tradectr = tradectr.count
-   
+
     const close_history = [];
     const ma_history = [];
     const { quoteStream, region, exchange, maStream } = obj;
@@ -94,62 +95,64 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
 
                 //Compute & Publish SMA
                 if (close_history.length > ma_len) {
-                    ma_history.push(nj.mean(close_history));
+                    ma_history.unshift(parseFloat(sma(close_history)[0]))
                     var diff = close_history.length - ma_len
-                    for(i=0; i < diff; i++ ){
-                        close_history.pop()
+                    for (i = 0; i < diff; i++) {
+                        close_history.pop();
+
                     }
 
                     let sma_dict = {};
                     sma_dict['region'] = quoteregion;
                     sma_dict['exchange'] = exchange;
                     sma_dict['symbol'] = symbol;
-                    sma_dict['ma'] = ma_history[ma_history.length - 1];
+                    sma_dict['ma'] = ma_history[0];
                     sma_dict['close'] = close;
                     sma_dict['timestamp'] = timestamp.toString();
-
                     let sma_dic_str = JSON.stringify(sma_dict);
                     maStream.producer(sma_dic_str, regionUrl);
                 }
 
+                if (ma_history.length > ma_len){
+                    ma_history.pop()
+                }
+
+                let tradeobj = {};
+                tradeobj["exchange"] = exchange;
+                tradeobj["symbol"] = symbol;
+                tradeobj["quote_region"] = quoteregion;
+                tradeobj["trade_strategy"] = "MA Trading";
+                tradeobj["timestamp"] = timestamp;
+                tradeobj["trade_price"] = close;
+
                 //Do we need to BUY?
                 if (ma_history.length > 3 &&
-                    close_history[close_history.length - 1] > ma_history[ma_history.length - 1] &&
-                    close_history[close_history.length - 2] < ma_history[ma_history.length - 2]) {
-                    let tradeobj = {};
+                    close_history[0] > ma_history[0] &&
+                    close_history[1] < ma_history[1]) {
                     tradeobj["_key"] = "BUY-" + (timestamp).toString();
-                    tradeobj["exchange"] = exchange;
-                    tradeobj["symbol"] = symbol;
-                    tradeobj["quote_region"] = quoteregion;
-                    tradeobj["trade_strategy"] = "MA Trading";
-                    tradeobj["timestamp"] = timestamp;
                     tradeobj["trade_type"] = "BUY";
-                    tradeobj["trade_price"] = close;
-
-                    await insert_trade_into_c8db(regionUrl, tradeobj, fabric);
-                    tradectr += 1  // Increment the number of trades we put into the DB
-                    console.log("Buy Trade: " + JSON.stringify(tradeobj));
+                    try {
+                        await insert_trade_into_c8db(regionUrl, tradeobj, fabric);
+                        tradectr += 1  // Increment the number of trades we put into the DB
+                        // console.log("Buy Trade: " + JSON.stringify(tradeobj));
+                    } catch (e) {
+                        console.log("Error in inserting to collection", e);
+                    }
                 }
 
                 // Do we need to SELL?
 
                 else if (ma_history.length > 3 &&
-                    close_history[close_history.length - 1] < ma_history[ma_history.length - 1] &&
-                    close_history[close_history.length - 2] > ma_history[ma_history.length - 2]) {
-                    let tradeobj = {};
+                    close_history[0] < ma_history[0] &&
+                    close_history[1] > ma_history[1]) {
                     tradeobj["_key"] = "SELL-" + timestamp.toString();
-                    tradeobj["exchange"] = exchange;
-                    tradeobj["symbol"] = symbol;
-                    tradeobj["quote_region"] = quoteregion;
-                    tradeobj["trade_strategy"] = "MA Trading";
-                    tradeobj["timestamp"] = timestamp;
                     tradeobj["trade_type"] = "SELL";
-                    tradeobj["trade_price"] = close;
+
                     try {
                         await insert_trade_into_c8db(regionUrl, tradeobj, fabric);
                         tradectr += 1;  // Increment the number of trades we put into the DB
- 
-                        console.log(`Sell Trade: ${JSON.stringify(tradeobj)}`);
+
+                        // console.log(`Sell Trade: ${JSON.stringify(tradeobj)}`);
                     } catch (e) {
                         console.log("Error in inserting to collection", e);
                     }
@@ -164,7 +167,7 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
                         // After the first set of deletes, we set max to the number of docs we
                         // deleted the firs time, to keep the number of docs in the DB constant.
                         tradectr = await collectionhandle.count() // Fetch the number of documents in the collection after deletion
-                        tradectr = tradectr.count 
+                        tradectr = tradectr.count
                     }
                     catch (err) {
                         console.log("Error in deletion:" + err)
