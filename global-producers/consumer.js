@@ -90,15 +90,15 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
                 var quoteregion = dec.region;
 
                 if (close && timestamp) {
-                    close_history.unshift(close);
+                    close_history.push(close);
                 }
 
                 //Compute & Publish SMA
                 if (close_history.length > ma_len) {
-                    ma_history.unshift(parseFloat(sma(close_history)[0]))
+                    ma_history.push(parseFloat(sma(close_history)[0]))
                     var diff = close_history.length - ma_len
                     for (i = 0; i < diff; i++) {
-                        close_history.pop();
+                        close_history.splice(0,1);
 
                     }
 
@@ -106,7 +106,7 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
                     sma_dict['region'] = quoteregion;
                     sma_dict['exchange'] = exchange;
                     sma_dict['symbol'] = symbol;
-                    sma_dict['ma'] = ma_history[0];
+                    sma_dict['ma'] = ma_history[ma_history.length - 1];
                     sma_dict['close'] = close;
                     sma_dict['timestamp'] = timestamp.toString();
                     let sma_dic_str = JSON.stringify(sma_dict);
@@ -114,7 +114,7 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
                 }
 
                 if (ma_history.length > ma_len){
-                    ma_history.pop()
+                    ma_history.splice(0,1)
                 }
 
                 let tradeobj = {};
@@ -127,8 +127,8 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
 
                 //Do we need to BUY?
                 if (ma_history.length > 3 &&
-                    close_history[0] > ma_history[0] &&
-                    close_history[1] < ma_history[1]) {
+                    close_history[close_history.length - 1] > ma_history[ma_history.length - 1] &&
+                    close_history[close_history.length - 2] < ma_history[ma_history.length - 2]) {
                     tradeobj["_key"] = "BUY-" + (timestamp).toString();
                     tradeobj["trade_type"] = "BUY";
                     try {
@@ -143,8 +143,8 @@ async function consumeData(obj, onOpenCallback, regionUrl, fabric) {
                 // Do we need to SELL?
 
                 else if (ma_history.length > 3 &&
-                    close_history[0] < ma_history[0] &&
-                    close_history[1] > ma_history[1]) {
+                    close_history[close_history.length - 1] < ma_history[ma_history.length - 1] &&
+                    close_history[close_history.length - 2] > ma_history[ma_history.length - 2]) {
                     tradeobj["_key"] = "SELL-" + timestamp.toString();
                     tradeobj["trade_type"] = "SELL";
 
