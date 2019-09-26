@@ -1,6 +1,6 @@
 
 var Fabric = require('jsc8');
-const { regionUrl, tenantName, userName, password, fabricName } = require("./Config.js");
+const { regionUrl, email, password, fabricName } = require("./Config.js");
 const { consumeData } = require("./consumer.js");
 const { produceData } = require("./producer.js");
 // BEGIN GLOBAL CONSTANTS 
@@ -33,8 +33,7 @@ let fabric;
 
 async function init() {
     fabric = new Fabric(`https://${regionUrl}`);
-    await fabric.login(tenantName, userName, password);
-    fabric.useTenant(tenantName);
+    await fabric.login(email, password);
     fabric.useFabric(fabricName);
 
     const keys = Object.keys(QUOTECURR_EXCHANGE_MAP);

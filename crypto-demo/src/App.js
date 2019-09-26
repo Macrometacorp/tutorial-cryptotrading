@@ -79,10 +79,9 @@ class App extends Component {
       selectedRegionUrl: null,
       loginModal: true,
       federationUrl: "try.macrometa.io",
-      tenant: 'guest',
       fabric: '_system',
-      username: 'root',
-      password: 'guest',
+      email: "demo@macrometa.io",
+      password: 'demo',
       selectedRegionName: null
     };
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
@@ -125,12 +124,11 @@ class App extends Component {
 
   async selectedRegionLogin() {
     this.fabric.close();
-    const { selectedRegionUrl, tenant, username, password } = this.state;
+    const { selectedRegionUrl, email, password } = this.state;
     const fabricName = this.state.fabric;
     this.fabric = new Fabric(`https://${selectedRegionUrl}`);
     try {
-      await this.fabric.login(tenant, username, password);
-      this.fabric.useTenant(tenant);
+      await this.fabric.login(email, password);
       this.fabric.useFabric(fabricName);
       // start streams and get collection data
       this.initData();
@@ -141,14 +139,13 @@ class App extends Component {
   }
 
   async login() {
-    const { federationUrl, tenant, username, password } = this.state;
+    const { federationUrl, email, password } = this.state;
     const fabricName = this.state.fabric;
     this.fabric = new Fabric(`https://${federationUrl}`);
     try {
-      await this.fabric.login(tenant, username, password);
-      this.fabric.useTenant(tenant);
+      const res = await this.fabric.login(email, password);
       this.fabric.useFabric(fabricName);
-      const tenantHandler = this.fabric.tenant(tenant);
+      const tenantHandler = this.fabric.tenant("", res.tenant);
 
       // get tenant locations to select from
       const locations = await tenantHandler.getTenantEdgeLocations();
@@ -190,8 +187,8 @@ class App extends Component {
           const response = decodedMsg && JSON.parse(decodedMsg);
           let collectionData = [...this.state.collectionData];
           const newElem = makeCollectionData(response);
-          if (newElem){
-          collectionData = [newElem, ...collectionData];
+          if (newElem) {
+            collectionData = [newElem, ...collectionData];
           }
           if (collectionData.length > 20) {
             //remove more than 20 data points
@@ -199,8 +196,8 @@ class App extends Component {
           }
           this.setState({ collectionData });
         }
-      
-      
+
+
       }
     }, this.state.selectedRegionUrl);
     this.setState({ documentStream: stream });
@@ -396,27 +393,12 @@ class App extends Component {
             InputProps={{
               className: classes.input
             }}
-            label="Tenant"
-            defaultValue={this.state.tenant}
+            label="Email"
+            defaultValue={this.state.email}
 
             onChange={(event) => {
-              const tenant = event.target.value;
-              this.setState({ tenant });
-            }}
-            margin="normal"
-          />
-
-          <TextField
-            label="User"
-            InputProps={{
-              className: classes.input
-            }}
-
-            defaultValue={this.state.username}
-            onChange={(event) => {
-              const username = event.target.value;
-              this.setState({ username });
-
+              const email = event.target.value;
+              this.setState({ email });
             }}
             margin="normal"
           />
@@ -468,7 +450,7 @@ class App extends Component {
     const { showFiltered, collectionData, filteredData, showSnackbar, snackbarText } = this.state;
     const { classes } = this.props;
     const collection = showFiltered ? filteredData : collectionData;
- 
+
     return (
       <div className="App">
         <div className="Region" style={{ backgroundColor: 'black', marginTop: '10px', display: 'flex', justifyContent: "center" }} >

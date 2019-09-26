@@ -76,13 +76,12 @@ Note:- This needs to be run locally even if you want to see the running demo or 
 
 The login details to be used by the node application are present at `global-producers/Config.js`.
 
-There you can edit the file in order to connect to different tenants and users.
+There you can edit the file in order to connect to different users.
 ```
 module.exports = {
     regionUrl: "try.macrometa.io",
-    tenantName: "guest",
-    userName: "root",
-    password: "guest",
+    email: "demo@macrometa.io",
+    password: "demo",
     fabricName: "_system"
 }
 ```

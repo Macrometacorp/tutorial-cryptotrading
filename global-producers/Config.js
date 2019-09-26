@@ -1,7 +1,6 @@
 module.exports = {
     regionUrl: "try.macrometa.io",
-    tenantName: "guest",
-    userName: "root",
-    password: "guest",
+    email:"demo@macrometa.io",
+    password: "demo",
     fabricName: "_system"
 }
