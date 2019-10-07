@@ -13,7 +13,7 @@ import {
   makeCollectionData,
   CONSTANTS,
   getQuoteStreamTopicName,
-  getCollectionTopicName,
+  getCollectionName,
   getRandomInt
 } from './utils';
 
@@ -73,7 +73,6 @@ class App extends Component {
       showSnackbar: false,
       snackbarText: '',
       showFiltered: false,
-      documentStream: null,
       regionModal: false,
       availableRegions: null,
       selectedRegionUrl: null,
@@ -91,6 +90,7 @@ class App extends Component {
     this.handleSearchTextChange = this.handleSearchTextChange.bind(this);
     this.jwtToken = undefined;
     this.fabric = undefined;
+    this.collection = undefined;
   }
 
 
@@ -107,7 +107,7 @@ class App extends Component {
       this.state[chartNum].stream.closeConnections();
     });
 
-    this.state.documentStream.closeConnections();
+    this.collection.closeOnChangeConnection();
 
   }
 
@@ -145,12 +145,15 @@ class App extends Component {
     try {
       const res = await this.fabric.login(email, password);
       this.fabric.useFabric(fabricName);
+      const deployedRegions = await this.fabric.get();
+      const regions = deployedRegions.options.dcList.split(",");
       const tenantHandler = this.fabric.tenant("", res.tenant);
-
-      // get tenant locations to select from
       const locations = await tenantHandler.getTenantEdgeLocations();
       const { dcInfo } = locations[0];
-      this.setState({ availableRegions: dcInfo, regionModal: true });
+      const availableRegions = dcInfo.filter((dcObject) => {
+        return regions.indexOf(dcObject.name > -1);
+      })
+      this.setState({ availableRegions: availableRegions, regionModal: true });
     } catch (e) {
       this.openSnackBar('Auth failed.');
       console.log(e);
@@ -170,9 +173,9 @@ class App extends Component {
 
   establishDocumentConnection() {
 
-    const topicName = getCollectionTopicName();
-    const stream = this.fabric.stream(topicName, true);
-    stream.consumer(`${topicName}-sub${getRandomInt()}`, {
+    const collectionName = getCollectionName();
+    this.collection = this.fabric.collection(collectionName);
+    this.collection.onChange({
       onopen: () => console.log("WebSocket is open for trades"),
       onclose: () => console.log('Closing WS connection for trades'),
       onerror: () => {
@@ -199,8 +202,7 @@ class App extends Component {
 
 
       }
-    }, this.state.selectedRegionUrl);
-    this.setState({ documentStream: stream });
+    }, this.state.selectedRegionUrl, `${collectionName}-sub${getRandomInt()}`);
   }
 
   establishConnection(chartNum) {
