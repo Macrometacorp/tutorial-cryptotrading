@@ -36,17 +36,26 @@ async function init() {
     await fabric.login(email, password);
     fabric.useFabric(fabricName);
 
+    const response = await fabric.listPersistentStreams(false);
+    const streams = response.result;
+
     const keys = Object.keys(QUOTECURR_EXCHANGE_MAP);
     for (let key of keys) {
         const obj = QUOTECURR_EXCHANGE_MAP[key];
 
         const quote_topic = `${QUOTES_TOPIC_PREFIX}${key}`;
         obj.quoteStream = fabric.stream(quote_topic, false);
-        await obj.quoteStream.createStream();
+
+        if (!streams.find(stream => stream.topic === obj.quoteStream.topic)) {
+            await obj.quoteStream.createStream();
+        }
 
         const ma_topic = `${AVGQUOTES_TOPIC_PREFIX}${key}`;
         obj.maStream = fabric.stream(ma_topic, false);
-        await obj.maStream.createStream();
+
+        if (!streams.find(stream => stream.topic === obj.maStream.topic)) {
+            await obj.maStream.createStream();
+        }
 
         const onOpenCallback = () => {
             produceData(key, obj, regionUrl);
