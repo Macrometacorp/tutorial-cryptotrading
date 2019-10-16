@@ -79,8 +79,8 @@ The login details to be used by the node application are present at `global-prod
 There you can edit the file in order to connect to different users.
 ```
 module.exports = {
-    regionUrl: "try.macrometa.io",
-    email: "demo@macrometa.io",
+    regionUrl: "gdn1.prod.macrometa.io",
+    email:"demo@macrometa.io",
     password: "demo",
     fabricName: "_system"
 }
