@@ -91,13 +91,13 @@ Now to start the server locally just navigate to `global-producers` in your term
 Once it is done execute `node index.js >> ./publisher.log 2>&1 &`. This will start the server on your local machine.
 You can find the logs in `publisher.log`, this file will be present in the folder from where you run the above command.
 
-Once the server starts you should be able to see the charts in the UI deployed at `http://try.macrometa.crypto-trading.s3-website.us-east-2.amazonaws.com/`.
+Once the server starts you should be able to see the charts in the UI deployed at `http://crypto.gdn1.s3-website-us-east-1.amazonaws.com/`.
 
 
 
 # 6.  Already deployed demo
 
-Go to `http://try.macrometa.crypto-trading.s3-website.us-east-2.amazonaws.com/` 
+Go to `http://crypto.gdn1.s3-website-us-east-1.amazonaws.com/` 
 
 Login using your own credentials or the default ones.
 
