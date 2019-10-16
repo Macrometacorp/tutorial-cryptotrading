@@ -1,17 +1,20 @@
 #!/bin/bash
 
-echo "Cron job: */5 * * * * /home/ubuntu/tutorial-cryptotrading/global-producers/run_cron.sh"
+echo "Cron job for 6 hours should be: 0 */6 * * *"
 echo "Starting crypto cron job"
 echo "This will start the node server"
-echo "And keep closing and opening it after every 3 hours"
+echo "And keep closing and opening it after every 6 hours"
 
 node_id=$(pidof node)
+path="/root/tutorial-cryptotrading/global-producers"
 
 echo "pid of node is:" ${node_id}
 
+echo "Current path is:" ${path}
+
 startNode () {
     echo "Starting node service"
-    node /home/ubuntu/tutorial-cryptotrading/global-producers/index.js >> /home/ubuntu/tutorial-cryptotrading/global-producers/publisher.log 2>&1 &
+    node ${path}/index.js >> ${path}/publisher.log 2>&1 &
 }
 
 # Check if there is any node process
