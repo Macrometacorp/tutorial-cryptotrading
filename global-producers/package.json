@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "ccxt": "^1.18.1014",
-    "jsc8": "^0.15.0",
+    "jsc8": "^0.15.1",
     "jsnumpy": "^1.1.10",
     "sma": "^0.1.1"
   }
