@@ -25,6 +25,7 @@ const QUOTECURR_EXCHANGE_MAP = {
 };
 
 const BACKLOG_CLEAR_INTERVAL = 60 * 60 * 1000;
+const LOGIN_INTERVAL = 6 * 60 * 60 * 1000;
 
 // C8Streams
 const QUOTES_TOPIC_PREFIX = "crypto-trader-quotes-";
@@ -73,6 +74,31 @@ async function init() {
       console.log("Coudn't clear backlog");
     }
   }, BACKLOG_CLEAR_INTERVAL);
+
+  // re-login to get a new token
+  let loginCount = 1;
+  const login = resetCounter => {
+    if (resetCounter) loginCount = 1;
+    fabric
+      .login(email, password)
+      .then(() => {
+        console.log("\x1b[32m", `LOGGED IN ON TRY:${loginCount}`);
+        console.log("\x1b[37m");
+      })
+      .catch(e => {
+        ++loginCount;
+        if (loginCount <= 5) {
+          console.log(`LOGIN FAILED. Retrying...Retry count: ${loginCount}`);
+          login();
+        } else {
+          console.error("\x1b[31m", `LOGIN RETRIES EXHAUSTED: ${e}`);
+          console.log("\x1b[37m");
+        }
+      });
+  };
+  setInterval(async () => {
+    login(true);
+  }, LOGIN_INTERVAL);
 }
 
 init();
