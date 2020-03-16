@@ -82,8 +82,7 @@ async function init() {
     fabric
       .login(email, password)
       .then(() => {
-        console.log("\x1b[32m", `LOGGED IN ON TRY:${loginCount}`);
-        console.log("\x1b[37m");
+        console.log(`LOGGED IN ON TRY:${loginCount}`);
       })
       .catch(e => {
         ++loginCount;
@@ -91,8 +90,7 @@ async function init() {
           console.log(`LOGIN FAILED. Retrying...Retry count: ${loginCount}`);
           login();
         } else {
-          console.error("\x1b[31m", `LOGIN RETRIES EXHAUSTED: ${e}`);
-          console.log("\x1b[37m");
+          console.log(`LOGIN RETRIES EXHAUSTED: ${e}`);
         }
       });
   };
