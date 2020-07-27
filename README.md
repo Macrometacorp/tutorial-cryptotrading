@@ -4,21 +4,16 @@ Demo to show a real-time trading dashboard for three different exchanges.
 
 The complete crypto-trading demo has two components:
 
-1. A node application
+1. A stream application.
 2. A UI application written in Reactjs
 
-The node application is has three main files:
-
-1. `index.js` - initialisation work for jsc8 and C8 streams
-2. `producer.js` - gets the latest values from different exchanges and publishes them to their respective C8 streams
-3. `consumer.js` - Listens for the data published on the streams by `producer.js`. Based on that that data it calculates the `moving average` pushes it to a stream and caclulates if it is the right time to `BUY` or `SELL` and writes these suggestions to the `trades` collection.
 
 The UI then makes use of all the streams and the `trades` collection to show the charts and suggestions at one place.
 
 For each of the three exchanges `USD`, `EUR` and `JPY`, this demo makes use of the following streams:
 
-1. `cryto-trader-quotes-{USD/EUR/JPY}`
-2. `crypto-tader-quotes-avg-{USD/EUR/JPY}`
+1. `CrytoTraderQuotes{USD/EUR/JPY}`
+2. `CryptoTraderQuotesAvg{USD/EUR/JPY}`
 
 The below steps will describe on how to deploy the node and UI application.
 
@@ -71,29 +66,153 @@ A sample `bucket policy` is:
 
 Now goto the `Properties` tab in the aws console for this bucket and open `Static website hosting` option. Then select the option `Use this bucket to host a website` and provide `index.html` for both `Index document` and `Error document` text fields. Click on save and the website is now live!
 
-# 5. How to run the Node app locally
+# 5. How to deploy the stream application.
 
-Note:- This needs to be run locally even if you want to see the running demo or you want to host the UI locally
-
-The login details to be used by the node application are present at `global-producers/Config.js`.
-
-There you can edit the file in order to connect to different users.
+Deploy the following stream application on your federation and activate the app.
 
 ```
-module.exports = {
-    regionUrl: "gdn1.prod.macrometa.io",
-    email:"demo@macrometa.io",
-    password: "demo",
-    fabricName: "_system"
-}
+@App:name("crypto-trading-app")
+@App:description("Crypto Trading demo")
+
+-- The trigger
+define trigger CryptoTraderEventsTrigger at every 5 sec;
+
+/*
+This app reads every 5 seconds the close prices from Coinbase, Bitstamp and Bitflyer exchanges APIs.
+Then it calculates the average prices within 10 events window and creates a "BUY/SELL" trading strategy.
+The close and average prices are stored in CryptoTraderQuotesAvgXXX streams 
+whereas the strategy is kept in trades collection.
+*/
+
+/**
+Testing the Stream Application:
+    1. Publish the app
+       
+    2. Start the GUI against the same federation
+*/
+
+-- Streams for the http call requests
+-------------------------------------------------------------------------------------------------------------------------------------
+@sink(type='http-call', publisher.url='https://api.pro.coinbase.com/products/btc-usd/trades/?limit=1',
+      method='GET', headers="'User-Agent:c8cep'", sink.id='coinbase-ticker', @map(type='json'))
+define stream UsdCryptoTraderRequestStream (triggered_time string);
+
+@sink(type='http-call', publisher.url='https://www.bitstamp.net/api/v2/ohlc/btceur/?step=60&limit=1',
+      method='GET', sink.id='bitstamp-ticker', @map(type='json'))
+define stream EurCryptoTraderRequestStream (triggered_time string);
+
+@sink(type='http-call', publisher.url='https://api.bitflyer.com/v1/executions/?product_code=BTC_JPY&count=1',
+      method='GET', sink.id='bitflyer-ticker', @map(type='json'))
+define stream JpyCryptoTraderRequestStream (triggered_time string);
+
+-- Streams for the http call responses
+-------------------------------------------------------------------------------------------------------------------------------------
+@source(type='http-call-response', sink.id='coinbase-ticker', http.status.code='200', @map(type='json', enclosing.element="$.*"))
+define stream UsdCryptoTraderTickerResponseStream(side string, time string, price double);
+
+@source(type='http-call-response', sink.id='bitstamp-ticker', http.status.code='200', 
+         @map(type='json', enclosing.element="$.data", @attributes(symbol = "pair", timestamp = "ohlc[0].timestamp", price = "ohlc[0].close")))
+define stream EurCryptoTraderTickerResponseStream(symbol string, timestamp long, price double);
+
+@source(type='http-call-response', sink.id='bitflyer-ticker', http.status.code='200', @map(type='json'))
+define stream JpyCryptoTraderTickerResponseStream(side string, exec_date string, price double);
+
+-- Streams for the close and average prices
+-------------------------------------------------------------------------------------------------------------------------------------
+@sink(type = 'c8streams', stream = "CryptoTraderQuotesAvgUSD", @map(type='json'), replication.type="global")
+define stream CryptoTraderQuotesAvgUSD(exchange string, quote_region string, symbol string, ma double, close double, timestamp long);
+
+@sink(type = 'c8streams', stream = "CryptoTraderQuotesAvgEUR", @map(type='json'), replication.type="global")
+define stream CryptoTraderQuotesAvgEUR(exchange string, quote_region string, symbol string, ma double, close double, timestamp long);
+
+@sink(type = 'c8streams', stream = "CryptoTraderQuotesAvgJPY", @map(type='json'), replication.type="global")
+define stream CryptoTraderQuotesAvgJPY(exchange string, quote_region string, symbol string, ma double, close double, timestamp long);
+
+-- Common trades store
+@store(type='c8db', collection='trades')
+define table trades(exchange string, quote_region string, symbol string, timestamp long, trade_location string,
+		            trade_price double, trade_strategy string, trade_type string);
+		            
+-- Fire Coinbase Pro BTC/USD requests initiated by a trigger
+-------------------------------------------------------------------------------
+select time:currentTimestamp() as triggered_time from CryptoTraderEventsTrigger
+insert into UsdCryptoTraderRequestStream;
+
+-- Fire Bitstamp BTC/EUR requests initiated by a trigger
+-------------------------------------------------------------------------------
+select time:currentTimestamp() as triggered_time from CryptoTraderEventsTrigger
+insert into EurCryptoTraderRequestStream;
+
+-- Fire Bitflyer BTC/JPY requests initiated by a trigger
+-------------------------------------------------------------------------------
+select time:currentTimestamp() as triggered_time from CryptoTraderEventsTrigger
+insert into JpyCryptoTraderRequestStream;
+
+-- Coinbase Pro BTC/USD strategy generation
+-------------------------------------------------------------------------------------------------
+@info(name='Query for BTC/USD close and average prices within moving 10 events windows')
+select "Coinbase Pro" as exchange, "USA" as quote_region,
+        "BTC/USD" as symbol, avg(convert(price, 'double')) as ma, convert(price, 'double') as close, 
+        time:timestampInMilliseconds(str:replaceFirst(str:replaceFirst(time, 'T', ' '), 'Z','0'), 'yyyy-MM-dd HH:mm:ss.SSS') as timestamp
+  from  UsdCryptoTraderTickerResponseStream[side == "buy"]#window.length(10)
+insert into CryptoTraderQuotesAvgUSD;
+
+@info(name='Query for BTC/USD trading strategy')
+select e2.exchange, e2.quote_region, e2.symbol,  e2.timestamp,
+       "gdn1.prod.macrometa.io" as trade_location,
+       e2.close as trade_price, "MA Trading" as trade_strategy,
+  	   ifThenElse(e1.close < e1.ma and  e2.close > e2.ma, 'BUY', 'SELL') as trade_type
+  from every (e1=CryptoTraderQuotesAvgUSD) -> e2=CryptoTraderQuotesAvgUSD
+insert into trades;
+  
+select timestamp, symbol
+  from CryptoTraderQuotesAvgUSD#window.length(10)
+delete trades for expired events on trades.timestamp < timestamp and trades.symbol == symbol;
+
+-- Bitstamp BTC/EUR trading strategy generation
+-----------------------------------------------------------------------------------------
+@info(name='Query for BTC/EUR close and average prices within moving 10 events windows')
+select "Bitstamp" as exchange, "Europe" as quote_region,
+        symbol, avg(price) as ma, price as close, timestamp
+  from  EurCryptoTraderTickerResponseStream[not(price is null)]#window.length(10)
+insert into CryptoTraderQuotesAvgEUR;
+
+@info(name='Query for BTC/EUR trading strategy')
+select e2.exchange, e2.quote_region, e2.symbol,  e2.timestamp,
+       "gdn1.prod.macrometa.io" as trade_location,
+       e2.close as trade_price, "MA Trading" as trade_strategy,
+  	   ifThenElse(e1.close < e1.ma and  e2.close > e2.ma, 'BUY', 'SELL') as trade_type
+  from every (e1=CryptoTraderQuotesAvgEUR) -> e2=CryptoTraderQuotesAvgEUR
+insert into trades;
+
+select timestamp, symbol
+  from CryptoTraderQuotesAvgEUR#window.length(10)
+delete trades for expired events on trades.timestamp < timestamp and trades.symbol == symbol;
+
+-- Bitflyer BTC/JPY strategy generation
+----------------------------------------------------------------------------------------------
+@info(name='Query for BTC/JPY close and average prices within moving 10 events windows')
+select "Bitflyer" as exchange, "Asia-Pacific" as quote_region,
+        "BTC/JPY" as symbol, avg(price) as ma, price as close, 
+        time:timestampInMilliseconds(str:replaceFirst(exec_date, 'T', ' '), 'yyyy-MM-dd HH:mm:ss.SSS') as timestamp
+  from  JpyCryptoTraderTickerResponseStream[side == "BUY"]#window.length(10)
+insert into CryptoTraderQuotesAvgJPY;
+
+@info(name='Query for BTC/JPY trading strategy')
+select e2.exchange, e2.quote_region, e2.symbol,  e2.timestamp,
+       "gdn1.prod.macrometa.io" as trade_location,
+       e2.close as trade_price, "MA Trading" as trade_strategy,
+  	   ifThenElse(e1.close < e1.ma and  e2.close > e2.ma, 'BUY', 'SELL') as trade_type
+  from every (e1=CryptoTraderQuotesAvgJPY) -> e2=CryptoTraderQuotesAvgJPY
+insert into trades;
+  
+select timestamp, symbol
+  from CryptoTraderQuotesAvgJPY#window.length(10)
+delete trades for expired events on trades.timestamp < timestamp and trades.symbol == symbol;
+
 ```
 
-Now to start the server locally just navigate to `global-producers` in your terminal. If `node_modules` folder is not there, execute `npm install`.
-
-Once it is done execute `node index.js > publisher.log` or `node index.js > publisher.log &` if you want to run the node app in the background.
-You can find the logs in `publisher.log`, this file will be present in the folder from where you run the above command.
-
-Once the server starts you should be able to see the charts in the UI deployed at `http://crypto.gdn1.s3-website-us-east-1.amazonaws.com/`.
+Activate the app and you will be able to see the data in the UI.
 
 # 6. Already deployed demo
 
