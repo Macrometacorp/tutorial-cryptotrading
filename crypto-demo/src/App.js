@@ -113,6 +113,7 @@ class App extends Component {
 
   initData() {
     const charts = [CHART1, CHART2, CHART3].map(this.establishConnection);
+    console.log("----",charts)
     this.setState({
       [CHART1]: charts[CHART1],
       [CHART2]: charts[CHART2],
@@ -212,6 +213,7 @@ class App extends Component {
     const stream = this.fabric.stream(streamTopic, false);
     console.log(typeof(this.state.selectedRegionUrl))
     const consumerOTP = await stream.getOtp();
+    console.log("***", consumerOTP)
     const consumer = stream.consumer(`${name}-sub${getRandomInt()}`,
                     this.state.selectedRegionUrl, {
                           otp: consumerOTP,
@@ -223,7 +225,7 @@ class App extends Component {
     })
 
     consumer.on("message", (msg)=>{
-        const receiveMsg = JSON.parse(message);
+        const receiveMsg = JSON.parse(msg);
         const { payload } = receiveMsg;
         if (receiveMsg && payload) {
           const decodedMsg = atob(payload);
@@ -484,7 +486,7 @@ class App extends Component {
     const { showFiltered, collectionData, filteredData, showSnackbar, snackbarText } = this.state;
     const { classes } = this.props;
     const collection = showFiltered ? filteredData : collectionData;
-
+    console.log(">>>>>>>>",CHART1)
     return (
       <div className="App">
         <div className="Region" style={{ backgroundColor: 'black', marginTop: '10px', display: 'flex', justifyContent: "center" }} >
@@ -505,7 +507,7 @@ class App extends Component {
             [CHART1, CHART2, CHART3].map(
               (chartNum) => {
                 const { close } = this.state[chartNum];
-                const currentValue = close[close.length - 1] || 0;
+                const currentValue = close? close[close.length - 1] : 0;
                 return getCurrentValue(chartNum, currentValue);
               }
             )
