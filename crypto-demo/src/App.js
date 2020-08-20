@@ -77,7 +77,7 @@ class App extends Component {
       availableRegions: null,
       selectedRegionUrl: null,
       loginModal: true,
-      federationUrl: "gdn1.macrometa.io",
+      federationUrl: "qa2.eng3.macrometa.io",
       fabric: '_system',
       email: "demo@macrometa.io",
       password: 'demo',
@@ -205,12 +205,44 @@ class App extends Component {
     }, this.state.selectedRegionUrl, `${collectionName}-sub${getRandomInt()}`);
   }
 
-  establishConnection(chartNum) {
+  async establishConnection(chartNum) {
     const newChart = _.cloneDeep(this.state[chartNum]);
     const { name } = this.state[chartNum];
     const streamTopic = getQuoteStreamTopicName(name);
     const stream = this.fabric.stream(streamTopic, false);
-    stream.consumer(`${name}-sub${getRandomInt()}`, {
+    console.log(typeof(this.state.selectedRegionUrl))
+    const consumerOTP = await stream.getOtp();
+    const consumer = stream.consumer(`${name}-sub${getRandomInt()}`,
+                    this.state.selectedRegionUrl, {
+                          otp: consumerOTP,
+                    });
+    
+    consumer.on("error",()=>{
+      this.openSnackBar('Failed to establish WS connection');
+      console.log(`Failed to establish WS connection for ${streamTopic}`);
+    })
+
+    consumer.on("message", (msg)=>{
+        const receiveMsg = JSON.parse(message);
+        const { payload } = receiveMsg;
+        if (receiveMsg && payload) {
+          const decodedMsg = atob(payload);
+          const response = decodedMsg && JSON.parse(decodedMsg);
+          console.log("CHART CONSUMER MSG:", response);
+          this.setState({ [chartNum]: makeChartData(response, this.state[chartNum]) });
+        }
+    })
+
+    consumer.on("close",()=>{
+        console.log(`Closing WS connection for ${streamTopic}`)
+    })
+
+    consumer.on("open", ()=>{
+      console.log(`Connection open for ${streamTopic}`)
+    })
+
+    /*
+    stream.consumer(`${name}-sub${getRandomInt()}`,this.state.selectedRegionUrl, {
       onerror: () => {
         this.openSnackBar('Failed to establish WS connection');
         console.log(`Failed to establish WS connection for ${streamTopic}`);
@@ -227,7 +259,7 @@ class App extends Component {
           this.setState({ [chartNum]: makeChartData(response, this.state[chartNum]) });
         }
       }
-    }, this.state.selectedRegionUrl);
+    })*/;
 
     newChart.stream = stream;
 
