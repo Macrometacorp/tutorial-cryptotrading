@@ -111,8 +111,12 @@ class App extends Component {
 
   }
 
-  initData() {
-    const charts = [CHART1, CHART2, CHART3].map(this.establishConnection);
+  async initData() {
+    let charts = [CHART1, CHART2, CHART3];
+    for (let i = 0; i < charts.length; i++) {
+      charts[i] = await this.establishConnection(i);
+    }
+
     this.setState({
       [CHART1]: charts[CHART1],
       [CHART2]: charts[CHART2],
@@ -131,7 +135,7 @@ class App extends Component {
       await this.fabric.login(email, password);
       this.fabric.useFabric(fabricName);
       // start streams and get collection data
-      this.initData();
+      await this.initData();
     } catch (e) {
       this.openSnackBar('Failed to login with selected region.');
       console.log(e);
@@ -171,19 +175,22 @@ class App extends Component {
 
   }
 
-  establishDocumentConnection() {
+  async establishDocumentConnection() {
 
     const collectionName = getCollectionName();
     this.collection = this.fabric.collection(collectionName);
-    this.collection.onChange({
-      onopen: () => console.log("WebSocket is open for trades"),
-      onclose: () => console.log('Closing WS connection for trades'),
-      onerror: () => {
-        this.openSnackBar('Failed to establish WS connection for trades');
-        console.log('Failed to establish WS connection for trades');
-      },
-      onmessage: message => {
-        const receiveMsg = JSON.parse(message);
+    const consumer = await this.collection.onChange(
+      this.state.selectedRegionUrl,
+      `${collectionName}-sub${getRandomInt()}`
+    );
+
+    consumer.on("error", () => {
+      this.openSnackBar('Failed to establish WS connection for trades');
+      console.log('Failed to establish WS connection for trades');
+    });
+
+    consumer.on("message", (msg) => {
+      const receiveMsg = JSON.parse(msg);
         const { payload } = receiveMsg;
         if (receiveMsg && payload) {
           const decodedMsg = atob(payload);
@@ -199,18 +206,83 @@ class App extends Component {
           }
           this.setState({ collectionData });
         }
+    });
+
+    consumer.on("close", () => {
+      console.log('Closing WS connection for trades');
+    });
+
+    consumer.on("open", () => {
+      console.log("WebSocket is open for trades");
+    });
+
+    // this.collection.onChange({
+    //   onopen: () => console.log("WebSocket is open for trades"),
+    //   onclose: () => console.log('Closing WS connection for trades'),
+    //   onerror: () => {
+    //     this.openSnackBar('Failed to establish WS connection for trades');
+    //     console.log('Failed to establish WS connection for trades');
+    //   },
+    //   onmessage: message => {
+    //     const receiveMsg = JSON.parse(message);
+    //     const { payload } = receiveMsg;
+    //     if (receiveMsg && payload) {
+    //       const decodedMsg = atob(payload);
+    //       const response = decodedMsg && JSON.parse(decodedMsg);
+    //       let collectionData = [...this.state.collectionData];
+    //       const newElem = makeCollectionData(response);
+    //       if (newElem) {
+    //         collectionData = [newElem, ...collectionData];
+    //       }
+    //       if (collectionData.length > 20) {
+    //         //remove more than 20 data points
+    //         collectionData = collectionData.slice(0, 20);
+    //       }
+    //       this.setState({ collectionData });
+    //     }
 
 
-      }
-    }, this.state.selectedRegionUrl, `${collectionName}-sub${getRandomInt()}`);
+    //   }
+    // }, this.state.selectedRegionUrl, `${collectionName}-sub${getRandomInt()}`);
   }
 
-  establishConnection(chartNum) {
+  async establishConnection(chartNum) {
     const newChart = _.cloneDeep(this.state[chartNum]);
     const { name } = this.state[chartNum];
     const streamTopic = getQuoteStreamTopicName(name);
     const stream = this.fabric.stream(streamTopic, false);
-    stream.consumer(`${name}-sub${getRandomInt()}`, {
+    const consumerOTP = await stream.getOtp();
+    const consumer = stream.consumer(`${name}-sub${getRandomInt()}`,
+      this.state.selectedRegionUrl, {
+        otp: consumerOTP,
+      });
+
+    consumer.on("error", () => {
+      this.openSnackBar('Failed to establish WS connection');
+      console.log(`Failed to establish WS connection for ${streamTopic}`);
+    });
+
+    consumer.on("message", (msg) => {
+      const receiveMsg = JSON.parse(msg);
+      const { payload } = receiveMsg;
+      if (receiveMsg && payload) {
+        const decodedMsg = atob(payload);
+        const response = decodedMsg && JSON.parse(decodedMsg);
+        console.log("CHART CONSUMER MSG:", response);
+        this.setState({ [chartNum]: makeChartData(response, this.state[chartNum]) });
+      }
+    });
+
+    consumer.on("close", () => {
+      console.log(`Closing WS connection for ${streamTopic}`)
+    });
+
+    consumer.on("open", () => {
+      console.log(`Connection open for ${streamTopic}`)
+    });
+
+    /*
+    stream.consumer(`${name}-sub${getRandomInt()}`,this.state.selectedRegionUrl, {
       onerror: () => {
         this.openSnackBar('Failed to establish WS connection');
         console.log(`Failed to establish WS connection for ${streamTopic}`);
@@ -227,7 +299,7 @@ class App extends Component {
           this.setState({ [chartNum]: makeChartData(response, this.state[chartNum]) });
         }
       }
-    }, this.state.selectedRegionUrl);
+    })*/;
 
     newChart.stream = stream;
 
@@ -452,7 +524,6 @@ class App extends Component {
     const { showFiltered, collectionData, filteredData, showSnackbar, snackbarText } = this.state;
     const { classes } = this.props;
     const collection = showFiltered ? filteredData : collectionData;
-
     return (
       <div className="App">
         <div className="Region" style={{ backgroundColor: 'black', marginTop: '10px', display: 'flex', justifyContent: "center" }} >
