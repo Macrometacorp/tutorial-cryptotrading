@@ -157,7 +157,14 @@ class App extends Component {
       const availableRegions = dcInfo.filter((dcObject) => {
         return regions.indexOf(dcObject.name > -1);
       })
-      this.setState({ availableRegions: availableRegions, regionModal: true });
+      const tempAvailableRegions = availableRegions.filter(
+        (availableRegion) => availableRegion.name !== "gdn1-sfo2"
+      );
+
+      this.setState({
+        availableRegions: tempAvailableRegions,
+        regionModal: true,
+      });
     } catch (e) {
       this.openSnackBar('Auth failed.');
       console.log(e);
