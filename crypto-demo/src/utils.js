@@ -28,8 +28,8 @@ export function getRandomInt() {
 
 }
 
-export const getQuoteStreamTopicName = name => `CryptoTraderQuotesAvg${name}`;
-export const getCollectionName = () => 'trades';
+export const getQuoteStreamTopicName = name => `CryptoTraderQuotesAvg${name}2`;
+export const getCollectionName = () => 'trades2';
 
 const convertTimestampToDate = (timestamp) => {
     let unixTime = (typeof timestamp === 'string') ? parseFloat(timestamp) : timestamp;
