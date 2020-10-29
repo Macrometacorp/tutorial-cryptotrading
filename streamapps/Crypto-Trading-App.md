@@ -60,7 +60,7 @@ define stream CryptoTraderQuotesAvgJPY(exchange string, quote_region string, sym
 
 -- Common trades store
 @store(type='c8db', collection='trades', replication.type="global")
-define table trades(exchange string, quote_region string, symbol string, timestamp long, trade_location string,
+define table trades(exchange string, quote_region string, symbol string, timestamp long,
 		            trade_price double, trade_strategy string, trade_type string);
 		            
 -- Fire Coinbase Pro BTC/USD requests initiated by a trigger
@@ -90,7 +90,6 @@ insert into CryptoTraderQuotesAvgUSD;
 
 @info(name='Query for BTC/USD trading strategy BUY')
 select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
-       "gdn1.prod.macrometa.io" as trade_location,
        e2.close as trade_price, "MA Trading" as trade_strategy,
   	   'BUY' as trade_type
   from every e1=CryptoTraderQuotesAvgUSD[e1.close < e1.ma], e2=CryptoTraderQuotesAvgUSD[e2.close > e2.ma]
@@ -98,7 +97,6 @@ insert into trades;
 
 @info(name='Query for BTC/USD trading strategy SELL')
 select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
-       "gdn1.prod.macrometa.io" as trade_location,
        e2.close as trade_price, "MA Trading" as trade_strategy,
   	   'SELL' as trade_type
   from every e1=CryptoTraderQuotesAvgUSD[e1.close > e1.ma], e2=CryptoTraderQuotesAvgUSD[e2.close < e2.ma]
@@ -120,7 +118,6 @@ insert into CryptoTraderQuotesAvgEUR;
 
 @info(name='Query for BTC/EUR trading strategy BUY')
 select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
-       "gdn1.prod.macrometa.io" as trade_location,
        e2.close as trade_price, "MA Trading" as trade_strategy,
   	   'BUY' as trade_type
   from every e1=CryptoTraderQuotesAvgEUR[e1.close < e1.ma], e2=CryptoTraderQuotesAvgEUR[e2.close > e2.ma]
@@ -128,7 +125,6 @@ insert into trades;
 
 @info(name='Query for BTC/EUR trading strategy SELL')
 select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
-       "gdn1.prod.macrometa.io" as trade_location,
        e2.close as trade_price, "MA Trading" as trade_strategy,
   	   'SELL' as trade_type
   from every e1=CryptoTraderQuotesAvgEUR[e1.close > e1.ma], e2=CryptoTraderQuotesAvgEUR[e2.close < e2.ma]
@@ -150,7 +146,6 @@ insert into CryptoTraderQuotesAvgJPY;
 
 @info(name='Query for BTC/JPY trading strategy BUY')
 select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
-       "gdn1.prod.macrometa.io" as trade_location,
        e2.close as trade_price, "MA Trading" as trade_strategy,
   	   'BUY' as trade_type
   from every e1=CryptoTraderQuotesAvgJPY[e1.close < e1.ma], e2=CryptoTraderQuotesAvgJPY[e2.close > e2.ma]
@@ -158,7 +153,6 @@ insert into trades;
 
 @info(name='Query for BTC/JPY trading strategy SELL')
 select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
-       "gdn1.prod.macrometa.io" as trade_location,
        e2.close as trade_price, "MA Trading" as trade_strategy,
   	   'SELL' as trade_type
   from every e1=CryptoTraderQuotesAvgJPY[e1.close > e1.ma], e2=CryptoTraderQuotesAvgJPY[e2.close < e2.ma]
