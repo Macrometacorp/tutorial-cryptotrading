@@ -71,7 +71,7 @@ Now goto the `Properties` tab in the aws console for this bucket and open `Stati
 Deploy the following stream application on your federation and activate the app.
 
 ```
-@App:name("crypto-trading-app")
+@App:name("Crypto-Trading-App")
 @App:description("Crypto Trading demo")
 
 -- The trigger
@@ -154,7 +154,7 @@ select "Coinbase Pro" as exchange, "USA" as quote_region,
         "BTC/USD" as symbol, avg(convert(price, 'double')) as ma, convert(price, 'double') as close, 
         --time:timestampInMilliseconds(str:replaceFirst(str:replaceFirst(time, 'T', ' '), 'Z','0'), 'yyyy-MM-dd HH:mm:ss.SSS') as timestamp
         time:timestampInMilliseconds()/1000 as timestamp
-  from  UsdCryptoTraderTickerResponseStream[context:getVar('region') == 'gdn1-fra1']#window.length(10)
+  from  UsdCryptoTraderTickerResponseStream#window.length(10)
 insert into CryptoTraderQuotesAvgUSD;
 
 @info(name='Query for BTC/USD trading strategy BUY')
@@ -174,7 +174,7 @@ select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
 insert into trades;
 
 select timestamp, symbol
-  from CryptoTraderQuotesAvgUSD#window.length(10)
+  from CryptoTraderQuotesAvgUSD#window.time(10 min)
 delete trades for expired events on trades.timestamp < timestamp and trades.symbol == symbol;
 
 -- Bitstamp BTC/EUR trading strategy generation
@@ -184,7 +184,7 @@ select "Bitstamp" as exchange, "Europe" as quote_region,
         "BTC/EUR" as symbol, avg(convert(last, 'double')) as ma, convert(last, 'double') as close, 
         --convert(timestamp, 'long') as timestamp
         time:timestampInMilliseconds()/1000 as timestamp
-  from  EurCryptoTraderTickerResponseStream[context:getVar('region') == 'gdn1-fra1']#window.length(10)
+  from  EurCryptoTraderTickerResponseStream#window.length(10)
 insert into CryptoTraderQuotesAvgEUR;
 
 @info(name='Query for BTC/EUR trading strategy BUY')
@@ -204,7 +204,7 @@ select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
 insert into trades;
 
 select timestamp, symbol
-  from CryptoTraderQuotesAvgEUR#window.length(10)
+  from CryptoTraderQuotesAvgEUR#window.time(10 min)
 delete trades for expired events on trades.timestamp < timestamp and trades.symbol == symbol;
 
 -- Bitflyer BTC/JPY strategy generation
@@ -214,7 +214,7 @@ select "Bitflyer" as exchange, "Asia-Pacific" as quote_region,
         "BTC/JPY" as symbol, avg(ltp) as ma, ltp as close, 
         --time:timestampInMilliseconds(str:replaceFirst(timestamp, 'T', ' '), 'yyyy-MM-dd HH:mm:ss.SSS') as timestamp
         time:timestampInMilliseconds()/1000 as timestamp
-  from  JpyCryptoTraderTickerResponseStream[context:getVar('region') == 'gdn1-fra1']#window.length(10)
+  from  JpyCryptoTraderTickerResponseStream#window.length(10)
 insert into CryptoTraderQuotesAvgJPY;
 
 @info(name='Query for BTC/JPY trading strategy BUY')
@@ -234,7 +234,7 @@ select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
 insert into trades;
  
 select timestamp, symbol
-  from CryptoTraderQuotesAvgJPY#window.length(10)
+  from CryptoTraderQuotesAvgJPY#window.time(10 min)
 delete trades for expired events on trades.timestamp < timestamp and trades.symbol == symbol;
 
 ```
