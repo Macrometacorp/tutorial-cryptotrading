@@ -85,7 +85,7 @@ select "Coinbase Pro" as exchange, "USA" as quote_region,
         "BTC/USD" as symbol, avg(convert(price, 'double')) as ma, convert(price, 'double') as close, 
         --time:timestampInMilliseconds(str:replaceFirst(str:replaceFirst(time, 'T', ' '), 'Z','0'), 'yyyy-MM-dd HH:mm:ss.SSS') as timestamp
         time:timestampInMilliseconds()/1000 as timestamp
-  from  UsdCryptoTraderTickerResponseStream[context:getVar('region') == 'gdn1-fra1']#window.length(10)
+  from  UsdCryptoTraderTickerResponseStream#window.length(10)
 insert into CryptoTraderQuotesAvgUSD;
 
 @info(name='Query for BTC/USD trading strategy BUY')
@@ -115,7 +115,7 @@ select "Bitstamp" as exchange, "Europe" as quote_region,
         "BTC/EUR" as symbol, avg(convert(last, 'double')) as ma, convert(last, 'double') as close, 
         --convert(timestamp, 'long') as timestamp
         time:timestampInMilliseconds()/1000 as timestamp
-  from  EurCryptoTraderTickerResponseStream[context:getVar('region') == 'gdn1-fra1']#window.length(10)
+  from  EurCryptoTraderTickerResponseStream#window.length(10)
 insert into CryptoTraderQuotesAvgEUR;
 
 @info(name='Query for BTC/EUR trading strategy BUY')
@@ -145,7 +145,7 @@ select "Bitflyer" as exchange, "Asia-Pacific" as quote_region,
         "BTC/JPY" as symbol, avg(ltp) as ma, ltp as close, 
         --time:timestampInMilliseconds(str:replaceFirst(timestamp, 'T', ' '), 'yyyy-MM-dd HH:mm:ss.SSS') as timestamp
         time:timestampInMilliseconds()/1000 as timestamp
-  from  JpyCryptoTraderTickerResponseStream[context:getVar('region') == 'gdn1-fra1']#window.length(10)
+  from  JpyCryptoTraderTickerResponseStream#window.length(10)
 insert into CryptoTraderQuotesAvgJPY;
 
 @info(name='Query for BTC/JPY trading strategy BUY')
