@@ -105,7 +105,7 @@ select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
 insert into trades;
 
 select timestamp, symbol
-  from CryptoTraderQuotesAvgUSD#window.length(10)
+  from CryptoTraderQuotesAvgUSD#window.time(10 min)
 delete trades for expired events on trades.timestamp < timestamp and trades.symbol == symbol;
 
 -- Bitstamp BTC/EUR trading strategy generation
@@ -135,7 +135,7 @@ select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
 insert into trades;
 
 select timestamp, symbol
-  from CryptoTraderQuotesAvgEUR#window.length(10)
+  from CryptoTraderQuotesAvgEUR#window.time(10 min)
 delete trades for expired events on trades.timestamp < timestamp and trades.symbol == symbol;
 
 -- Bitflyer BTC/JPY strategy generation
@@ -165,7 +165,7 @@ select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
 insert into trades;
  
 select timestamp, symbol
-  from CryptoTraderQuotesAvgJPY#window.length(10)
+  from CryptoTraderQuotesAvgJPY#window.time(10 min)
 delete trades for expired events on trades.timestamp < timestamp and trades.symbol == symbol;
 
 ```
