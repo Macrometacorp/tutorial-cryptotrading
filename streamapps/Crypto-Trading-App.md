@@ -59,7 +59,7 @@ define stream CryptoTraderQuotesAvgEUR(exchange string, quote_region string, sym
 define stream CryptoTraderQuotesAvgJPY(exchange string, quote_region string, symbol string, ma double, close double, timestamp long);
 
 -- Common trades store
-@store(type='c8db', collection='trades', replication.type="local")
+@store(type='c8db', collection='trades', replication.type="global")
 define table trades(exchange string, quote_region string, symbol string, timestamp long, trade_location string,
 		            trade_price double, trade_strategy string, trade_type string);
 		            
