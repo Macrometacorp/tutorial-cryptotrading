@@ -78,9 +78,9 @@ class App extends Component {
       selectedRegionUrl: null,
       loginModal: true,
       federationUrl: "gdn1.macrometa.io",
-      fabric: '_system',
-      email: "demo@macrometa.io",
-      password: 'demo',
+      fabric: 'xxxx',
+      email: "xxxx@macrometa.io",
+      password: 'xxxx',
       selectedRegionName: null
     };
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
