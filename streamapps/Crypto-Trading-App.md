@@ -11,7 +11,7 @@ define trigger CryptoTraderEventsTrigger at every 5 sec;
 /*
 This app reads every 5 seconds the close prices from Coinbase, Bitstamp and Bitflyer exchanges APIs.
 Then it calculates the average prices within 10 events window and creates a "BUY/SELL" trading strategy.
-The close and average prices are stored in CryptoTraderQuotesAvgXXX streams 
+The close and average prices are stored in CryptoTraderQuotesAvgXXXNew streams 
 whereas the strategy is kept in trades collection.
 */
 
@@ -49,14 +49,14 @@ define stream JpyCryptoTraderTickerResponseStream(timestamp string, ltp double);
 
 -- Streams for the close and average prices
 -------------------------------------------------------------------------------------------------------------------------------------
-@sink(type = 'c8streams', stream = "CryptoTraderQuotesAvgUSD", @map(type='json'), replication.type="global")
-define stream CryptoTraderQuotesAvgUSD(exchange string, quote_region string, symbol string, ma double, close double, timestamp long);
+@sink(type = 'c8streams', stream = "CryptoTraderQuotesAvgUSDNew", @map(type='json'), replication.type="global")
+define stream CryptoTraderQuotesAvgUSDNew(exchange string, quote_region string, symbol string, ma double, close double, timestamp long);
 
-@sink(type = 'c8streams', stream = "CryptoTraderQuotesAvgEUR", @map(type='json'), replication.type="global")
-define stream CryptoTraderQuotesAvgEUR(exchange string, quote_region string, symbol string, ma double, close double, timestamp long);
+@sink(type = 'c8streams', stream = "CryptoTraderQuotesAvgEURNew", @map(type='json'), replication.type="global")
+define stream CryptoTraderQuotesAvgEURNew(exchange string, quote_region string, symbol string, ma double, close double, timestamp long);
 
-@sink(type = 'c8streams', stream = "CryptoTraderQuotesAvgJPY", @map(type='json'), replication.type="global")
-define stream CryptoTraderQuotesAvgJPY(exchange string, quote_region string, symbol string, ma double, close double, timestamp long);
+@sink(type = 'c8streams', stream = "CryptoTraderQuotesAvgJPYNew", @map(type='json'), replication.type="global")
+define stream CryptoTraderQuotesAvgJPYNew(exchange string, quote_region string, symbol string, ma double, close double, timestamp long);
 
 -- Common trades store
 @store(type='c8db', collection='trades', replication.type="global")
@@ -86,24 +86,24 @@ select "Coinbase Pro" as exchange, "USA" as quote_region,
         --time:timestampInMilliseconds(str:replaceFirst(str:replaceFirst(time, 'T', ' '), 'Z','0'), 'yyyy-MM-dd HH:mm:ss.SSS') as timestamp
         time:timestampInMilliseconds()/1000 as timestamp
   from  UsdCryptoTraderTickerResponseStream[context:getVar('region') == 'gdn1-sfo2']#window.length(10)
-insert into CryptoTraderQuotesAvgUSD;
+insert into CryptoTraderQuotesAvgUSDNew;
 
 @info(name='Query for BTC/USD trading strategy BUY')
 select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
        e2.close as trade_price, "MA Trading" as trade_strategy,
   	   'BUY' as trade_type
-  from every e1=CryptoTraderQuotesAvgUSD[e1.close < e1.ma], e2=CryptoTraderQuotesAvgUSD[e2.close > e2.ma]
+  from every e1=CryptoTraderQuotesAvgUSDNew[e1.close < e1.ma], e2=CryptoTraderQuotesAvgUSDNew[e2.close > e2.ma]
 insert into trades;
 
 @info(name='Query for BTC/USD trading strategy SELL')
 select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
        e2.close as trade_price, "MA Trading" as trade_strategy,
   	   'SELL' as trade_type
-  from every e1=CryptoTraderQuotesAvgUSD[e1.close > e1.ma], e2=CryptoTraderQuotesAvgUSD[e2.close < e2.ma]
+  from every e1=CryptoTraderQuotesAvgUSDNew[e1.close > e1.ma], e2=CryptoTraderQuotesAvgUSDNew[e2.close < e2.ma]
 insert into trades;
 
 select timestamp, symbol
-  from CryptoTraderQuotesAvgUSD#window.time(10 min)
+  from CryptoTraderQuotesAvgUSDNew#window.time(10 min)
 delete trades for expired events on trades.timestamp < timestamp and trades.symbol == symbol;
 
 -- Bitstamp BTC/EUR trading strategy generation
@@ -114,24 +114,24 @@ select "Bitstamp" as exchange, "Europe" as quote_region,
         --convert(timestamp, 'long') as timestamp
         time:timestampInMilliseconds()/1000 as timestamp
   from  EurCryptoTraderTickerResponseStream[context:getVar('region') == 'gdn1-sfo2']#window.length(10)
-insert into CryptoTraderQuotesAvgEUR;
+insert into CryptoTraderQuotesAvgEURNew;
 
 @info(name='Query for BTC/EUR trading strategy BUY')
 select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
        e2.close as trade_price, "MA Trading" as trade_strategy,
   	   'BUY' as trade_type
-  from every e1=CryptoTraderQuotesAvgEUR[e1.close < e1.ma], e2=CryptoTraderQuotesAvgEUR[e2.close > e2.ma]
+  from every e1=CryptoTraderQuotesAvgEURNew[e1.close < e1.ma], e2=CryptoTraderQuotesAvgEURNew[e2.close > e2.ma]
 insert into trades;
 
 @info(name='Query for BTC/EUR trading strategy SELL')
 select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
        e2.close as trade_price, "MA Trading" as trade_strategy,
   	   'SELL' as trade_type
-  from every e1=CryptoTraderQuotesAvgEUR[e1.close > e1.ma], e2=CryptoTraderQuotesAvgEUR[e2.close < e2.ma]
+  from every e1=CryptoTraderQuotesAvgEURNew[e1.close > e1.ma], e2=CryptoTraderQuotesAvgEURNew[e2.close < e2.ma]
 insert into trades;
 
 select timestamp, symbol
-  from CryptoTraderQuotesAvgEUR#window.time(10 min)
+  from CryptoTraderQuotesAvgEURNew#window.time(10 min)
 delete trades for expired events on trades.timestamp < timestamp and trades.symbol == symbol;
 
 -- Bitflyer BTC/JPY strategy generation
@@ -142,24 +142,24 @@ select "Bitflyer" as exchange, "Asia-Pacific" as quote_region,
         --time:timestampInMilliseconds(str:replaceFirst(timestamp, 'T', ' '), 'yyyy-MM-dd HH:mm:ss.SSS') as timestamp
         time:timestampInMilliseconds()/1000 as timestamp
   from  JpyCryptoTraderTickerResponseStream[context:getVar('region') == 'gdn1-sfo2']#window.length(10)
-insert into CryptoTraderQuotesAvgJPY;
+insert into CryptoTraderQuotesAvgJPYNew;
 
 @info(name='Query for BTC/JPY trading strategy BUY')
 select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
        e2.close as trade_price, "MA Trading" as trade_strategy,
   	   'BUY' as trade_type
-  from every e1=CryptoTraderQuotesAvgJPY[e1.close < e1.ma], e2=CryptoTraderQuotesAvgJPY[e2.close > e2.ma]
+  from every e1=CryptoTraderQuotesAvgJPYNew[e1.close < e1.ma], e2=CryptoTraderQuotesAvgJPYNew[e2.close > e2.ma]
 insert into trades;
 
 @info(name='Query for BTC/JPY trading strategy SELL')
 select e2.exchange, e2.quote_region, e2.symbol, e2.timestamp,
        e2.close as trade_price, "MA Trading" as trade_strategy,
   	   'SELL' as trade_type
-  from every e1=CryptoTraderQuotesAvgJPY[e1.close > e1.ma], e2=CryptoTraderQuotesAvgJPY[e2.close < e2.ma]
+  from every e1=CryptoTraderQuotesAvgJPYNew[e1.close > e1.ma], e2=CryptoTraderQuotesAvgJPYNew[e2.close < e2.ma]
 insert into trades;
  
 select timestamp, symbol
-  from CryptoTraderQuotesAvgJPY#window.time(10 min)
+  from CryptoTraderQuotesAvgJPYNew#window.time(10 min)
 delete trades for expired events on trades.timestamp < timestamp and trades.symbol == symbol;
 
 ```

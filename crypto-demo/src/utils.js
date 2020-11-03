@@ -28,7 +28,7 @@ export function getRandomInt() {
 
 }
 
-export const getQuoteStreamTopicName = name => `CryptoTraderQuotesAvg${name}`;
+export const getQuoteStreamTopicName = name => `CryptoTraderQuotesAvg${name}New`;
 export const getCollectionName = () => 'trades';
 
 const convertTimestampToDate = (timestamp) => {
