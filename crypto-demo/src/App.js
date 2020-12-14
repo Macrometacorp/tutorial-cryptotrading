@@ -77,7 +77,7 @@ class App extends Component {
       availableRegions: null,
       selectedRegionUrl: null,
       loginModal: true,
-      federationUrl: "gdn.paas.macrometa.io",
+      federationUrl: "gdn1.macrometa.io",
       fabric: 'xxxx',
       email: "xxxx@macrometa.io",
       password: 'xxxx',
