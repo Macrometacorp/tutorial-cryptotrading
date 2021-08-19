@@ -77,10 +77,9 @@ class App extends Component {
       availableRegions: null,
       selectedRegionUrl: null,
       loginModal: true,
-      federationUrl: "gdn.paas.macrometa.io",
+      federationUrl: "xxxx",
       fabric: 'xxxx',
-      email: "xxxx@macrometa.io",
-      password: 'xxxx',
+      apikey: "xxxx",
       selectedRegionName: null
     };
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
@@ -128,13 +127,9 @@ class App extends Component {
 
   async selectedRegionLogin() {
     this.fabric.close();
-    const { selectedRegionUrl, email, password } = this.state;
-    const fabricName = this.state.fabric;
-    this.fabric = new Fabric(`https://${selectedRegionUrl}`);
+    const { selectedRegionUrl, apikey, fabric } = this.state;
+    this.fabric = new Fabric({url: `https://${selectedRegionUrl}`, apiKey: apikey, fabricName: fabric});
     try {
-      await this.fabric.login(email, password);
-      this.fabric.useFabric(fabricName);
-      // start streams and get collection data
       await this.initData();
     } catch (e) {
       this.openSnackBar('Failed to login with selected region.');
@@ -143,26 +138,14 @@ class App extends Component {
   }
 
   async login() {
-    const { federationUrl, email, password } = this.state;
-    const fabricName = this.state.fabric;
-    this.fabric = new Fabric(`https://${federationUrl}`);
+    const { federationUrl, apikey, fabric } = this.state;
+    this.fabric = new Fabric({url: `https://${federationUrl}`, apiKey: apikey, fabricName: fabric});
     try {
-      const res = await this.fabric.login(email, password);
-      this.fabric.useFabric(fabricName);
-      const deployedRegions = await this.fabric.get();
-      const regions = deployedRegions.options.dcList.split(",");
-      const tenantHandler = this.fabric.tenant("", res.tenant);
-      const locations = await tenantHandler.getTenantEdgeLocations();
-      const { dcInfo } = locations[0];
-      const availableRegions = dcInfo.filter((dcObject) => {
-        return regions.indexOf(dcObject.name > -1);
-      })
-      // const tempAvailableRegions = availableRegions.filter(
-      //   (availableRegion) => availableRegion.name !== "gdn1-sfo2"
-      // );
+      const deployedRegions = await this.fabric.getTenantEdgeLocations();
+      const { dcInfo } = deployedRegions[0];
 
       this.setState({
-        availableRegions,
+        availableRegions: dcInfo,
         regionModal: true,
       });
     } catch (e) {
@@ -474,12 +457,12 @@ class App extends Component {
             InputProps={{
               className: classes.input
             }}
-            label="Email"
-            defaultValue={this.state.email}
+            label="API Key"
+            defaultValue={this.state.apikey}
 
             onChange={(event) => {
-              const email = event.target.value;
-              this.setState({ email });
+              const apikey = event.target.value;
+              this.setState({ apikey });
             }}
             margin="normal"
           />
@@ -494,21 +477,6 @@ class App extends Component {
             onChange={(event) => {
               const fabric = event.target.value;
               this.setState({ fabric });
-            }}
-            margin="normal"
-          />
-
-          <TextField type='password'
-            id="pass"
-            label="Password"
-            defaultValue={this.state.password}
-            InputProps={{
-              className: classes.input
-            }}
-            onChange={(event) => {
-              const password = event.target.value;
-              this.setState({ password });
-
             }}
             margin="normal"
           />
