@@ -1,14 +1,14 @@
 {
-  "main.css": "/crypto-trading-5g/static/css/main.28dc7986.chunk.css",
-  "main.js": "/crypto-trading-5g/static/js/main.39c24e95.chunk.js",
-  "main.js.map": "/crypto-trading-5g/static/js/main.39c24e95.chunk.js.map",
-  "static/js/1.65265ae3.chunk.js": "/crypto-trading-5g/static/js/1.65265ae3.chunk.js",
-  "static/js/1.65265ae3.chunk.js.map": "/crypto-trading-5g/static/js/1.65265ae3.chunk.js.map",
-  "runtime~main.js": "/crypto-trading-5g/static/js/runtime~main.98e70f17.js",
-  "runtime~main.js.map": "/crypto-trading-5g/static/js/runtime~main.98e70f17.js.map",
-  "static/media/logo.svg": "/crypto-trading-5g/static/media/logo.596666c9.svg",
-  "static/css/main.28dc7986.chunk.css.map": "/crypto-trading-5g/static/css/main.28dc7986.chunk.css.map",
-  "index.html": "/crypto-trading-5g/index.html",
-  "precache-manifest.d425fd49a1f909a3178be782d7150ec8.js": "/crypto-trading-5g/precache-manifest.d425fd49a1f909a3178be782d7150ec8.js",
-  "service-worker.js": "/crypto-trading-5g/service-worker.js"
+  "main.css": "/tutorial-cryptotrading/static/css/main.28dc7986.chunk.css",
+  "main.js": "/tutorial-cryptotrading/static/js/main.b5c5e28d.chunk.js",
+  "main.js.map": "/tutorial-cryptotrading/static/js/main.b5c5e28d.chunk.js.map",
+  "static/js/1.65265ae3.chunk.js": "/tutorial-cryptotrading/static/js/1.65265ae3.chunk.js",
+  "static/js/1.65265ae3.chunk.js.map": "/tutorial-cryptotrading/static/js/1.65265ae3.chunk.js.map",
+  "runtime~main.js": "/tutorial-cryptotrading/static/js/runtime~main.0eed778d.js",
+  "runtime~main.js.map": "/tutorial-cryptotrading/static/js/runtime~main.0eed778d.js.map",
+  "static/media/logo.svg": "/tutorial-cryptotrading/static/media/logo.596666c9.svg",
+  "static/css/main.28dc7986.chunk.css.map": "/tutorial-cryptotrading/static/css/main.28dc7986.chunk.css.map",
+  "index.html": "/tutorial-cryptotrading/index.html",
+  "precache-manifest.128585d4c8f2a5d788facad5f65effec.js": "/tutorial-cryptotrading/precache-manifest.128585d4c8f2a5d788facad5f65effec.js",
+  "service-worker.js": "/tutorial-cryptotrading/service-worker.js"
 }
