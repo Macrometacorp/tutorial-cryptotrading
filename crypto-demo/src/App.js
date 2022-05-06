@@ -76,11 +76,9 @@ class App extends Component {
       regionModal: false,
       availableRegions: null,
       selectedRegionUrl: null,
-      loginModal: true,
-      federationUrl: "gdn.paas.macrometa.io",
-      fabric: 'xxxx',
-      email: "xxxx@macrometa.io",
-      password: 'xxxx',
+      federationUrl: "{GDN_URL}",
+      fabricName: '{FABRIC_NAME}',
+      apiKey: '{API_KEY}',
       selectedRegionName: null
     };
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
@@ -94,10 +92,39 @@ class App extends Component {
   }
 
 
-  componentDidMount() {
+  async componentDidMount() {
     this.updateWindowDimensions();
     window.addEventListener('resize', this.updateWindowDimensions)
 
+    // Get regions
+    this.fabric = new Fabric({
+      url: `https://${this.state.federationUrl}`,
+      fabricName: this.state.fabricName,
+      apiKey: this.state.apiKey,
+    });
+
+    try {
+      const response = await this.fabric.getDcList()
+      const regions = response[0].dcInfo;
+
+      const availableRegions = regions.map(region => {
+        const { city, countrycode } = region.locationInfo;
+        return {
+          city,
+          countrycode,
+          label: `${city}, ${countrycode}`,
+          url: region.tags.url,
+        };
+      });
+
+      this.setState({
+        availableRegions,
+        regionModal: true,
+      });
+    } catch (e) {
+      this.openSnackBar('Failed to fetch regions.');
+      console.log(e);
+    }
   }
 
   componentWillUnmount() {
@@ -128,45 +155,18 @@ class App extends Component {
 
   async selectedRegionLogin() {
     this.fabric.close();
-    const { selectedRegionUrl, email, password } = this.state;
-    const fabricName = this.state.fabric;
-    this.fabric = new Fabric(`https://${selectedRegionUrl}`);
+
     try {
-      await this.fabric.login(email, password);
-      this.fabric.useFabric(fabricName);
+      this.fabric = new Fabric({
+        url: `https://${this.state.selectedRegionUrl}`,
+        fabricName: this.state.fabricName,
+        apiKey: this.state.apiKey,
+      });
+
       // start streams and get collection data
       await this.initData();
     } catch (e) {
-      this.openSnackBar('Failed to login with selected region.');
-      console.log(e);
-    }
-  }
-
-  async login() {
-    const { federationUrl, email, password } = this.state;
-    const fabricName = this.state.fabric;
-    this.fabric = new Fabric(`https://${federationUrl}`);
-    try {
-      const res = await this.fabric.login(email, password);
-      this.fabric.useFabric(fabricName);
-      const deployedRegions = await this.fabric.get();
-      const regions = deployedRegions.options.dcList.split(",");
-      const tenantHandler = this.fabric.tenant("", res.tenant);
-      const locations = await tenantHandler.getTenantEdgeLocations();
-      const { dcInfo } = locations[0];
-      const availableRegions = dcInfo.filter((dcObject) => {
-        return regions.indexOf(dcObject.name > -1);
-      })
-      // const tempAvailableRegions = availableRegions.filter(
-      //   (availableRegion) => availableRegion.name !== "gdn1-sfo2"
-      // );
-
-      this.setState({
-        availableRegions,
-        regionModal: true,
-      });
-    } catch (e) {
-      this.openSnackBar('Auth failed.');
+      this.openSnackBar('Failed to fetch data from selected region.');
       console.log(e);
     }
   }
@@ -424,9 +424,14 @@ class App extends Component {
           >
             {
               availableRegions.map(region => {
-                const { locationInfo: { city, countrycode }, tags: { url } } = region;
-                const label = `${city}, ${countrycode}`;
-                return <FormControlLabel key={label} value={url} control={<Radio />} label={label} />
+                return (
+                  <FormControlLabel
+                    key={region.label}
+                    value={region.url}
+                    control={<Radio />}
+                    label={region.label}
+                  />
+                );
               })
             }
           </RadioGroup>
@@ -435,90 +440,6 @@ class App extends Component {
           <Button
             disabled={!selectedRegionUrl}
             onClick={() => this.setState({ regionModal: false }, () => { this.selectedRegionLogin() })}
-            size="small" variant="text" color="primary">
-            <span className="actions">CONFIRM</span>
-          </Button>
-        </DialogActions>
-      </Dialog>
-    )
-  }
-
-  renderLoginModal() {
-
-    let { loginModal } = this.state;
-    const { classes } = this.props;
-
-    return (
-      <Dialog
-        fullWidth
-        open={loginModal}
-      >
-        <DialogTitle id="form-dialog-title"> Please login with defaults or use your own account:</DialogTitle>
-        <DialogContent style={{ display: 'flex', flexDirection: 'column', maxWidth: '300px' }}>
-
-          <TextField
-            InputProps={{
-              className: classes.input
-            }}
-            label="Federation URL"
-            defaultValue={this.state.federationUrl}
-
-            onChange={(event) => {
-              const federationUrl = event.target.value;
-              this.setState({ federationUrl });
-            }}
-            margin="normal"
-          />
-
-          <TextField
-            InputProps={{
-              className: classes.input
-            }}
-            label="Email"
-            defaultValue={this.state.email}
-
-            onChange={(event) => {
-              const email = event.target.value;
-              this.setState({ email });
-            }}
-            margin="normal"
-          />
-
-          <TextField
-            InputProps={{
-              className: classes.input
-            }}
-            label="Fabric"
-            defaultValue={this.state.fabric}
-
-            onChange={(event) => {
-              const fabric = event.target.value;
-              this.setState({ fabric });
-            }}
-            margin="normal"
-          />
-
-          <TextField type='password'
-            id="pass"
-            label="Password"
-            defaultValue={this.state.password}
-            InputProps={{
-              className: classes.input
-            }}
-            onChange={(event) => {
-              const password = event.target.value;
-              this.setState({ password });
-
-            }}
-            margin="normal"
-          />
-        </DialogContent>
-
-        <DialogActions>
-          <Button
-            onClick={() => this.setState({
-              loginModal: false,
-            }, () => { this.login() })}
             size="small" variant="text" color="primary">
             <span className="actions">CONFIRM</span>
           </Button>
@@ -616,8 +537,6 @@ class App extends Component {
           onClose={this.handleClose}
           message={<span id="message-id">{snackbarText}</span>}
         />
-
-        {this.renderLoginModal()}
 
         {this.state.regionModal && this.renderRegionModal()}
 
