@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import logo from './logo.png';
 import './App.css';
 import Plot from 'react-plotly.js';
 import _ from 'lodash';
@@ -76,9 +76,9 @@ class App extends Component {
       regionModal: false,
       availableRegions: null,
       selectedRegionUrl: null,
-      federationUrl: "{GDN_URL}",
-      fabricName: '{FABRIC_NAME}',
-      apiKey: '{API_KEY}',
+      federationUrl: process.env.REACT_APP_GDN_URL,
+      fabricName: process.env.REACT_APP_FABRIC_NAME,
+      apiKey: process.env.REACT_APP_API_KEY,
       selectedRegionName: null
     };
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
@@ -480,7 +480,7 @@ class App extends Component {
         </div>
         <div className="row" style={{ flex: 1 }}>
           <div className="leftPane">
-            <img alt="Macrometa" style={{ height: '64px', marginTop: '15px' }} src={logo} />
+            <img alt="Macrometa" style={{ height: '5.5rem', marginTop: '15px', paddingLeft: '1rem' }} src={logo} />
             <div className="textField" >
               <TextField
                 label="Filter"
