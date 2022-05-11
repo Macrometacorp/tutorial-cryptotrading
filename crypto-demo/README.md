@@ -1,5 +1,5 @@
 # Crypto Trading Bot :robot:
-[:link: Here](https://t6r8d2q9.stackpathcdn.com) is the link for the live demo!
+[:link: Here](https://d5k4b3z2.stackpathcdn.com) is the link for the live demo!
 
 ## Overview
 This demo has two main components:
