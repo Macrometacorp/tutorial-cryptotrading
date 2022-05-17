@@ -12,8 +12,8 @@ The UI then makes use of all the streams and the `trades` collection to show the
 
 For each of the three exchanges `USD`, `EUR` and `JPY`, this demo makes use of the following streams:
 
-1. `CrytoTraderQuotes{USD/EUR/JPY}`
-2. `CryptoTraderQuotesAvg{USD/EUR/JPY}`
+- `CrytoTraderQuotes{USD/EUR/JPY}`
+- `CryptoTraderQuotesAvg{USD/EUR/JPY}`
 
 The below steps will describe on how to deploy the node and UI application.
 
@@ -27,7 +27,7 @@ Clone tutorial-cryptotrading.
 
 # 3. How to run app(UI) locally
 
-> NOTE: This step is just for running the UI locally. The actual app is deployed on an AWS S3 Bucket. For the steps on S3 goto the `How to deploy app on S3` section.
+> NOTE: This step is just for running the UI locally. The actual app is deployed on an AWS S3 Bucket. For the steps on S3 go to the `How to deploy app on S3` section.
 
 Go to crypto-demo and run the following
 If `node_modules` is not there, execute `npm install`.
@@ -38,7 +38,7 @@ Once all the node modules have been installed execute `npm start` to start the d
 
 If `node_modules` is not there, execute `npm install`.
 
-Do to crypto-demo and run `npm run build`.
+Go to crypto-demo and run `npm run build`.
 This will create a folder build.
 
 The contents of this `build` folder need to be copied to the S3 bucket.
@@ -64,7 +64,7 @@ A sample `bucket policy` is:
 }
 ```
 
-Now goto the `Properties` tab in the aws console for this bucket and open `Static website hosting` option. Then select the option `Use this bucket to host a website` and provide `index.html` for both `Index document` and `Error document` text fields. Click on save and the website is now live!
+Now go to the `Properties` tab in the AWS console for this bucket and open `Static website hosting` option. Then select the option `Use this bucket to host a website` and provide `index.html` for both `Index document` and `Error document` text fields. Click on save and the website is now live!
 
 # 5. How to deploy the stream application.
 
@@ -76,6 +76,6 @@ Activate the app and you will be able to see the data in the UI.
 
 Go to `http://crypto.gdn1.s3-website-us-east-1.amazonaws.com/`
 
-Login using your own credentials or the default ones.
+Log in using your own credentials or the default ones.
 
 Start the Node server locally to see the data on the Graphs.
