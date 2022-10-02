@@ -74,8 +74,8 @@ Activate the app and you will be able to see the data in the UI.
 
 # 6. Already deployed demo
 
-Go to `http://crypto.gdn1.s3-website-us-east-1.amazonaws.com/`
+Go to: https://macrometacorp.github.io/tutorial-cryptotrading/
 
-Log in using your own credentials or the default ones.
+After you have configured the app in your account you can log in using your own credentials.
 
 Start the Node server locally to see the data on the Graphs.
