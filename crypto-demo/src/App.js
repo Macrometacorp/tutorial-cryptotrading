@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import Plot from 'react-plotly.js';
 import _ from 'lodash';
 import Fabric from 'jsc8';
 
+import TradesTable from "./components/TradesTable"
+import Logomark from "./logomark.svg"
 import {
+  convertToDecimal,
   makeChartData,
   getChartData,
-  getCurrentValue,
   makeCollectionArray,
   makeCollectionData,
   CONSTANTS,
@@ -17,12 +18,6 @@ import {
   getRandomInt
 } from './utils';
 
-import Table from '@material-ui/core/Table';
-
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
 import Snackbar from '@material-ui/core/Snackbar';
 import TextField from '@material-ui/core/TextField';
 import { withStyles } from '@material-ui/core/styles';
@@ -38,7 +33,7 @@ import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 
-const { CHART1, CHART2, CHART3, BLUE, GREEN, BACKGROUND } = CONSTANTS;
+const { CHART1, CHART2, CHART3, BACKGROUND } = CONSTANTS;
 
 class App extends Component {
 
@@ -351,58 +346,81 @@ class App extends Component {
   }
 
   renderCharts(chartNum) {
-    const screenWidth = this.state.width;
     const { timestamp, ma, close } = this.state[chartNum];
-    let chartData;
-    const layout = {
+
+    const price = close[close.length - 1] || 0;
+    const priceInDecimal = convertToDecimal(price);
+    
+    let heading, subheading, priceLabel;
+    switch (chartNum) {
+      case CHART1:
+        heading = 'BTC-USD'
+        subheading = 'Coinbase Pro'
+        priceLabel = `$${priceInDecimal}`;
+        break;
+      case CHART2:
+        heading = 'BTC-EUR'
+        subheading = 'BitStamp'
+        priceLabel = `€${priceInDecimal}`;
+        break;
+      default:
+        heading = 'BTC-JPY'
+        subheading = 'Bitflyer'
+        priceLabel = `¥${priceInDecimal}`
+        break;
+    }
+
+    const chartLayout = {
       showlegend: false,
       title: undefined,
-      paper_bgcolor: BACKGROUND,
-      plot_bgcolor: BACKGROUND,
-      width: screenWidth / 3,
-      height: 350,
+      paper_bgcolor: "transparent",
+      plot_bgcolor: "transparent",
       xaxis: {
         tickfont: {
           color: 'white'
         },
         showgrid: true,
-        gridcolor: '#6b6a6a',
+        gridcolor: "#535968", // mm-gray-600
         fixedrange: false,
-        zerolinecolor: '#6b6a6a'
+        zerolinecolor: "#535968", // mm-gray-600
       },
       yaxis: {
         tickfont: {
           color: 'white'
         },
         showgrid: true,
-        gridcolor: '#6b6a6a',
+        gridcolor: "#535968",
         fixedrange: false,
-        zerolinecolor: '#6b6a6a'
+        zerolinecolor: "#535968" // mm-gray-600
       }
     };
-    switch (chartNum) {
-      case CHART1:
-        chartData = getChartData(timestamp, ma, close);
-        layout.title = '<b style="color:white">BTC-USD @ Coinbase Pro</b>';
-        break;
-      case CHART2:
-        chartData = getChartData(timestamp, ma, close);
-        layout.title = '<b style="color:white">BTC-EUR @ BitStamp</b>';
-        break;
-      default:
-        chartData = getChartData(timestamp, ma, close);
-        layout.title = '<b style="color:white">BTC-JPY @ Bitflyer</b>';
-        break;
-    }
+
+    const chartData = getChartData(timestamp, ma, close);
 
     return (
-      <Plot
-        key={chartNum.toString()}
-        data={chartData}
-        layout={layout}
-        useResizeHandler={true}
-        style={{ height: '350px' }}
-      />
+      <div key={chartNum} className="h-full text-white">
+        {/* Title */}
+        <div className="bg-mm-gray-800 border border-mm-gray-600 font-extrabold leading-[32px] pl-[16px] pt-[12px] rounded-t-lg text-[21px]">
+          {heading}
+          <span className="font-medium leading-[32px] text-[18px]">
+            &nbsp;{subheading}
+          </span>
+
+          {/* Chart */}
+          <Plot
+            key={chartNum.toString()}
+            data={chartData}
+            layout={chartLayout}
+            useResizeHandler={true}
+            style={{ width: "100%" }}
+          />
+        </div>
+
+        {/* Price */}
+        <div className="bg-mm-gray-800/60 border border-mm-gray-600 font-semibold font-source-code-pro py-8 rounded-b-lg text-[48px] text-center">
+          {priceLabel}
+        </div>
+      </div>
     );
   }
 
@@ -532,83 +550,33 @@ class App extends Component {
     const { classes } = this.props;
     const collection = showFiltered ? filteredData : collectionData;
     return (
-      <div className="App">
-        <div className="Region" style={{ backgroundColor: 'black', marginTop: '10px', display: 'flex', justifyContent: "center" }} >
-          <span style={{ color: 'grey', fontSize: '18px' }}>Selected Region :  {this.state.selectedRegionName}   </span>
-        </div>
+      <div>
+        <div className="bg-mm-gray-900 grid xl:grid-cols-12">
+          <div className="xl:col-start-2 xl:col-end-12">
+            <div className="md:h-screen">
+              {/* Header */}
+              <div className="bg-transparent flex flex-row justify-between items-center h-[52px] md:h-[64px] text-white">
+                <img className="w-[150px] h-[40px]" src={Logomark} alt="Macrometa Logo"/>
+                <button className="border border-mm-gray-600 font-medium inline-flex items-center justify-center leading-[24px] my-[12px] rounded-lg text-[16px] w-[150px] h-[40px] text-center">
+                  {/* map-pin svg icon  */}
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-mm-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                  </svg>
+                  <span>&nbsp;{this.state.selectedRegionName}</span>
+                </button>
+              </div>
 
-        <div className="row" style={{ backgroundColor: 'black', marginTop: '10px' }}>
-          {
-            [CHART1, CHART2, CHART3].map(
-              (chartNum) => {
-                return this.renderCharts(chartNum);
-              }
-            )
-          }
-        </div>
-        <div className="row" style={{ justifyContent: ' space-around', padding: '30px 0 30px 0 ', backgroundColor: 'black' }}>
-          {
-            [CHART1, CHART2, CHART3].map(
-              (chartNum) => {
-                const { close } = this.state[chartNum];
-                const currentValue = close[close.length - 1] || 0;
-                return getCurrentValue(chartNum, currentValue);
-              }
-            )
-          }
-        </div>
-        <div className="row" style={{ flex: 1 }}>
-          <div className="leftPane">
-            <img alt="Macrometa" style={{ height: '64px', marginTop: '15px' }} src={logo} />
-            <div className="textField" >
-              <TextField
-                label="Filter"
-                placeholder="Enter here"
-                onChange={this.handleSearchTextChange}
-                classes={{
-                  root: classes.root
-                }}
-                margin="normal"
-                variant="outlined"
-              />
+              <div className="md:h-[calc(100vh-64px)] grid md:grid-rows-2">
+                {/* Charts */}
+                <div className="grid md:grid-cols-3 gap-4">
+                  {[CHART1, CHART2, CHART3].map((i) => this.renderCharts(i))}
+                </div>
 
+                {/* Trades Table */}
+                <TradesTable trades={collection} onChangeFilter={this.handleSearchTextChange}/>
+              </div>
             </div>
-          </div>
-          <div className="tableContainer">
-            <Table>
-              <TableHead
-                className={classes.tableHead}>
-                <TableRow>
-                  <TableCell component="th" className={classes.headCell}>Symbol</TableCell>
-                  <TableCell component="th" className={classes.headCell}>Price</TableCell>
-                  <TableCell component="th" className={classes.headCell}>Location</TableCell>
-                  <TableCell component="th" className={classes.headCell}>Region</TableCell>
-                  <TableCell component="th" className={classes.headCell}>Timestamp</TableCell>
-                  <TableCell component="th" className={classes.headCell}>Strategy</TableCell>
-                  <TableCell component="th" className={classes.headCell}>Type</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody
-                className={classes.tableBody}>
-                {
-                  collection.map((n) => {
-                    const shouldBuy = n.trade_type.includes("BUY");
-                    const cellColor = shouldBuy ? BLUE : GREEN;
-                    return (
-                      <TableRow key={Math.random()}>
-                        <TableCell className={classes.tableCell} style={{ color: cellColor }}>{n.symbol}</TableCell>
-                        <TableCell className={classes.tableCell} style={{ color: cellColor }}>{n.trade_price}</TableCell>
-                        <TableCell className={classes.tableCell} style={{ color: cellColor }}>{n.trade_location}</TableCell>
-                        <TableCell className={classes.tableCell} style={{ color: cellColor }}>{n.quote_region}</TableCell>
-                        <TableCell className={classes.tableCell} style={{ color: cellColor }}>{n.timestamp}</TableCell>
-                        <TableCell className={classes.tableCell} style={{ color: cellColor }}>{n.trade_strategy}</TableCell>
-                        <TableCell className={classes.tableCell} style={{ color: cellColor }}>{n.trade_type}</TableCell>
-                      </TableRow>
-                    );
-                  })
-                }
-              </TableBody>
-            </Table>
           </div>
         </div>
         <Snackbar

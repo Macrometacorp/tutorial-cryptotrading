@@ -78,7 +78,7 @@ export const getChartData = (X, Y1, Y2) => {
     return [trace1, trace2];
 }
 
-const convertToDecimal = (val) => {
+export const convertToDecimal = (val) => {
     const num = typeof val === 'string' ? val : val.toString();
     const decimalRepresentation = num.includes('.') ? num : `${num}.00`;
     return decimalRepresentation;
