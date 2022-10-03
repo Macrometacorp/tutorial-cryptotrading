@@ -371,6 +371,9 @@ class App extends Component {
     }
 
     const chartLayout = {
+      margin: {
+        t: 10,
+      },
       showlegend: false,
       title: undefined,
       paper_bgcolor: "transparent",
@@ -398,26 +401,29 @@ class App extends Component {
     const chartData = getChartData(timestamp, ma, close);
 
     return (
-      <div key={chartNum} className="h-full text-white">
+      <div key={chartNum} className="h-full flex flex-col text-white pb-[20px] 8xl:pb-[30px]">
         {/* Title */}
-        <div className="bg-mm-gray-800 border border-mm-gray-600 font-extrabold leading-[32px] pl-[16px] pt-[12px] rounded-t-lg text-[21px]">
+        <div className="grow bg-mm-gray-800 border border-mm-gray-600 font-extrabold leading-[32px] 8xl:leading-[48px] pl-[16px] 8xl:pl-[24px] pt-[12px] 8xl:pt-[18px] rounded-t-lg text-[21px] 8xl:text-[32px]">
           {heading}
-          <span className="font-medium leading-[32px] text-[18px]">
+          <span className="font-medium leading-[32px] 8xl:leading-[48px] text-[18px] 8xl:text-[27px]">
             &nbsp;{subheading}
           </span>
 
-          {/* Chart */}
-          <Plot
-            key={chartNum.toString()}
-            data={chartData}
-            layout={chartLayout}
-            useResizeHandler={true}
-            style={{ width: "100%" }}
-          />
+          <div className="3xl:mt-[12px] 3xl:w-[500px] 3xl:h-[260px] 4xl:mt-[16px] 4xl:w-[700px] 4xl:h-[460px] 8xl:mt-[24px] 8xl:w-[1000px] 8xl:h-[700px]">
+            {/* Chart */}
+            <Plot
+              key={chartNum.toString()}
+              data={chartData}
+              layout={chartLayout}
+              useResizeHandler={true}
+              style={{ width: "100%", height: "100%" }}
+            />
+          </div>
+
         </div>
 
         {/* Price */}
-        <div className="bg-mm-gray-800/60 border border-mm-gray-600 font-semibold font-source-code-pro py-8 rounded-b-lg text-[48px] text-center">
+        <div className="bg-mm-gray-800/60 border border-mm-gray-600 font-semibold font-source-code-pro py-[32px] 8xl:py-[48px] rounded-b-lg text-[48px] 8xl:text-[72px] text-center">
           {priceLabel}
         </div>
       </div>
@@ -553,23 +559,23 @@ class App extends Component {
       <div>
         <div className="bg-mm-gray-900 grid xl:grid-cols-12">
           <div className="xl:col-start-2 xl:col-end-12">
-            <div className="md:h-screen">
+            <div className="lg:h-screen">
               {/* Header */}
-              <div className="bg-transparent flex flex-row justify-between items-center h-[52px] md:h-[64px] text-white">
-                <img className="w-[150px] h-[40px]" src={Logomark} alt="Macrometa Logo"/>
-                <button className="border border-mm-gray-600 font-medium inline-flex items-center justify-center leading-[24px] my-[12px] rounded-lg text-[16px] w-[150px] h-[40px] text-center">
+              <div className="bg-transparent flex flex-row justify-between items-center h-[52px] lg:h-[64px] 8xl:h-[96px] text-white">
+                <img className="w-[150px] 8xl:w-[225px] h-[40px] 8xl:h-[60px]" src={Logomark} alt="Macrometa Logo"/>
+                <button className="border border-mm-gray-600 font-medium inline-flex items-center justify-center leading-[24px] 8xl:leading-[36px] my-[12px] 8xl:my-[18px] rounded-lg text-[16px] 8xl:text-[24px] w-[150px] 8xl:w-[225px] h-[40px] 8xl:h-[60px] text-center">
                   {/* map-pin svg icon  */}
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-mm-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-[20px] 8xl:w-[30px] h-[20px] 8xl:h-[30px] text-mm-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                   </svg>
-                  <span>&nbsp;{this.state.selectedRegionName}</span>
+                  <span>&nbsp;{this.state.selectedRegionName || "Region"}</span>
                 </button>
               </div>
 
-              <div className="md:h-[calc(100vh-64px)] grid md:grid-rows-2">
+              <div className="grid lg:grid-rows-2 lg:h-[calc(100vh-64px)] 8xl:h-[calc(100vh-96px)] ">
                 {/* Charts */}
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid lg:grid-cols-3 gap-4">
                   {[CHART1, CHART2, CHART3].map((i) => this.renderCharts(i))}
                 </div>
 
