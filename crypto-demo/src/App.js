@@ -371,14 +371,22 @@ class App extends Component {
     }
 
     const chartLayout = {
-      margin: {
-        t: 10,
+      margin: this.state.width >= 1920 ? { t: 10} : {
+        t: 5,
+        b: 5,
+        l: 40,
+        r: 5,
+        pad: 0
+      },
+      font: {
+        size: this.state.width >= 1920 ? 12 : 6,
       },
       showlegend: false,
       title: undefined,
       paper_bgcolor: "transparent",
       plot_bgcolor: "transparent",
       xaxis: {
+        showticklabels: this.state.width >= 1920,
         tickfont: {
           color: 'white'
         },
@@ -401,15 +409,15 @@ class App extends Component {
     const chartData = getChartData(timestamp, ma, close);
 
     return (
-      <div key={chartNum} className="h-full flex flex-col text-white pb-[20px] 8xl:pb-[30px]">
+      <div key={chartNum} className="h-full flex flex-col text-white pb-[13px] 3xl:pb-[20px] 8xl:pb-[30px]">
         {/* Title */}
-        <div className="grow bg-mm-gray-800 border border-mm-gray-600 font-extrabold leading-[32px] 8xl:leading-[48px] pl-[16px] 8xl:pl-[24px] pt-[12px] 8xl:pt-[18px] rounded-t-lg text-[21px] 8xl:text-[32px]">
+        <div className="grow bg-mm-gray-800 border border-mm-gray-600 font-extrabold leading-[21px] 3xl:leading-[32px] 8xl:leading-[48px] pl-[11px] 3xl:pl-[16px] 8xl:pl-[24px] pt-[8px] 3xl:pt-[12px] 8xl:pt-[18px] rounded-t-lg text-[14px] 3xl:text-[21px] 8xl:text-[32px]">
           {heading}
-          <span className="font-medium leading-[32px] 8xl:leading-[48px] text-[18px] 8xl:text-[27px]">
+          <span className="font-medium leading-[21px] 3xl:leading-[32px] 8xl:leading-[48px] text-[12px] 3xl:text-[18px] 8xl:text-[27px]">
             &nbsp;{subheading}
           </span>
 
-          <div className="3xl:mt-[12px] 3xl:w-[500px] 3xl:h-[260px] 4xl:mt-[16px] 4xl:w-[700px] 4xl:h-[460px] 8xl:mt-[24px] 8xl:w-[1000px] 8xl:h-[700px]">
+          <div className="mt-[8px] w-[380px] h-[180px] 3xl:mt-[12px] 3xl:w-[500px] 3xl:h-[260px] 4xl:mt-[16px] 4xl:w-[700px] 4xl:h-[460px] 8xl:mt-[24px] 8xl:w-[1000px] 8xl:h-[700px]">
             {/* Chart */}
             <Plot
               key={chartNum.toString()}
@@ -417,13 +425,14 @@ class App extends Component {
               layout={chartLayout}
               useResizeHandler={true}
               style={{ width: "100%", height: "100%" }}
+              config={{displayModeBar: false}}
             />
           </div>
 
         </div>
 
         {/* Price */}
-        <div className="bg-mm-gray-800/60 border border-mm-gray-600 font-semibold font-source-code-pro py-[32px] 8xl:py-[48px] rounded-b-lg text-[48px] 8xl:text-[72px] text-center">
+        <div className="bg-mm-gray-800/60 border border-mm-gray-600 font-semibold font-source-code-pro py-[21px] 3xl:py-[32px] 8xl:py-[48px] rounded-b-lg text-[32px] 3xl:text-[48px] 8xl:text-[72px] text-center">
           {priceLabel}
         </div>
       </div>
@@ -557,15 +566,15 @@ class App extends Component {
     const collection = showFiltered ? filteredData : collectionData;
     return (
       <div>
-        <div className="bg-mm-gray-900 grid xl:grid-cols-12">
-          <div className="xl:col-start-2 xl:col-end-12">
+        <div className="bg-mm-gray-900 grid px-[12px] 3xl:px-0 3xl:grid-cols-12">
+          <div className="3xl:col-start-2 3xl:col-end-12">
             <div className="lg:h-screen">
               {/* Header */}
-              <div className="bg-transparent flex flex-row justify-between items-center h-[52px] lg:h-[64px] 8xl:h-[96px] text-white">
-                <img className="w-[150px] 8xl:w-[225px] h-[40px] 8xl:h-[60px]" src={Logomark} alt="Macrometa Logo"/>
-                <button className="border border-mm-gray-600 font-medium inline-flex items-center justify-center leading-[24px] 8xl:leading-[36px] my-[12px] 8xl:my-[18px] rounded-lg text-[16px] 8xl:text-[24px] w-[150px] 8xl:w-[225px] h-[40px] 8xl:h-[60px] text-center">
+              <div className="bg-transparent flex flex-row justify-between items-center h-[40px] 3xl:h-[64px] 8xl:h-[96px] text-white">
+                <img className="w-[100px] h-[27px] 3xl:w-[150px] 3xl:h-[40px] 8xl:w-[225px] 8xl:h-[60px]" src={Logomark} alt="Macrometa Logo"/>
+                <button className="border border-mm-gray-600 font-medium inline-flex items-center justify-center leading-[16px] 3xl:leading-[24px] 8xl:leading-[36px] my-[8px] 3xl:my-[12px] 8xl:my-[18px] rounded-lg text-[11px] 3xl:text-[16px] 8xl:text-[24px] w-[100px] 3xl:w-[150px] 8xl:w-[225px] h-[27px] 3xl:h-[40px] 8xl:h-[60px] text-center">
                   {/* map-pin svg icon  */}
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-[20px] 8xl:w-[30px] h-[20px] 8xl:h-[30px] text-mm-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-[13px] h-[13px] 3xl:w-[20px] 3xl:h-[20px] 8xl:w-[30px] 8xl:h-[30px] text-mm-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                   </svg>
@@ -573,7 +582,7 @@ class App extends Component {
                 </button>
               </div>
 
-              <div className="grid lg:grid-rows-2 lg:h-[calc(100vh-64px)] 8xl:h-[calc(100vh-96px)] ">
+              <div className="grid lg:grid-rows-2 h-[calc(100vh-40px)] 3xl:h-[calc(100vh-64px)] 8xl:h-[calc(100vh-96px)] ">
                 {/* Charts */}
                 <div className="grid lg:grid-cols-3 gap-4">
                   {[CHART1, CHART2, CHART3].map((i) => this.renderCharts(i))}
