@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import Plot from 'react-plotly.js';
 import _ from 'lodash';
 import Fabric from 'jsc8';
 
+import TradesTable from "./components/TradesTable"
+import Logomark from "./logomark.svg"
 import {
+  convertToDecimal,
   makeChartData,
   getChartData,
-  getCurrentValue,
   makeCollectionArray,
   makeCollectionData,
   CONSTANTS,
@@ -17,12 +18,6 @@ import {
   getRandomInt
 } from './utils';
 
-import Table from '@material-ui/core/Table';
-
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
 import Snackbar from '@material-ui/core/Snackbar';
 import TextField from '@material-ui/core/TextField';
 import { withStyles } from '@material-ui/core/styles';
@@ -38,7 +33,7 @@ import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 
-const { CHART1, CHART2, CHART3, BLUE, GREEN, BACKGROUND } = CONSTANTS;
+const { CHART1, CHART2, CHART3, BACKGROUND } = CONSTANTS;
 
 class App extends Component {
 
@@ -351,58 +346,96 @@ class App extends Component {
   }
 
   renderCharts(chartNum) {
-    const screenWidth = this.state.width;
     const { timestamp, ma, close } = this.state[chartNum];
-    let chartData;
-    const layout = {
+
+    const price = close[close.length - 1] || 0;
+    const priceInDecimal = convertToDecimal(price);
+    
+    let heading, subheading, priceLabel;
+    switch (chartNum) {
+      case CHART1:
+        heading = 'BTC-USD'
+        subheading = 'Coinbase Pro'
+        priceLabel = `$${priceInDecimal}`;
+        break;
+      case CHART2:
+        heading = 'BTC-EUR'
+        subheading = 'BitStamp'
+        priceLabel = `€${priceInDecimal}`;
+        break;
+      default:
+        heading = 'BTC-JPY'
+        subheading = 'Bitflyer'
+        priceLabel = `¥${priceInDecimal}`
+        break;
+    }
+
+    const chartLayout = {
+      margin: this.state.width >= 1920 ? { t: 10} : {
+        t: 5,
+        b: 5,
+        l: 40,
+        r: 5,
+        pad: 0
+      },
+      font: {
+        size: this.state.width >= 1920 ? 12 : 6,
+      },
       showlegend: false,
       title: undefined,
-      paper_bgcolor: BACKGROUND,
-      plot_bgcolor: BACKGROUND,
-      width: screenWidth / 3,
-      height: 350,
+      paper_bgcolor: "transparent",
+      plot_bgcolor: "transparent",
       xaxis: {
+        showticklabels: this.state.width >= 1920,
         tickfont: {
           color: 'white'
         },
         showgrid: true,
-        gridcolor: '#6b6a6a',
+        gridcolor: "#535968", // mm-gray-600
         fixedrange: false,
-        zerolinecolor: '#6b6a6a'
+        zerolinecolor: "#535968", // mm-gray-600
       },
       yaxis: {
         tickfont: {
           color: 'white'
         },
         showgrid: true,
-        gridcolor: '#6b6a6a',
+        gridcolor: "#535968",
         fixedrange: false,
-        zerolinecolor: '#6b6a6a'
+        zerolinecolor: "#535968" // mm-gray-600
       }
     };
-    switch (chartNum) {
-      case CHART1:
-        chartData = getChartData(timestamp, ma, close);
-        layout.title = '<b style="color:white">BTC-USD @ Coinbase Pro</b>';
-        break;
-      case CHART2:
-        chartData = getChartData(timestamp, ma, close);
-        layout.title = '<b style="color:white">BTC-EUR @ BitStamp</b>';
-        break;
-      default:
-        chartData = getChartData(timestamp, ma, close);
-        layout.title = '<b style="color:white">BTC-JPY @ Bitflyer</b>';
-        break;
-    }
+
+    const chartData = getChartData(timestamp, ma, close);
 
     return (
-      <Plot
-        key={chartNum.toString()}
-        data={chartData}
-        layout={layout}
-        useResizeHandler={true}
-        style={{ height: '350px' }}
-      />
+      <div key={chartNum} className="h-full flex flex-col text-white pb-[13px] 3xl:pb-[20px] 8xl:pb-[30px]">
+        {/* Title */}
+        <div className="grow bg-mm-gray-800 border border-mm-gray-600 font-extrabold leading-[21px] 3xl:leading-[32px] 8xl:leading-[48px] pl-[11px] 3xl:pl-[16px] 8xl:pl-[24px] pt-[8px] 3xl:pt-[12px] 8xl:pt-[18px] rounded-t-lg text-[14px] 3xl:text-[21px] 8xl:text-[32px]">
+          {heading}
+          <span className="font-medium leading-[21px] 3xl:leading-[32px] 8xl:leading-[48px] text-[12px] 3xl:text-[18px] 8xl:text-[27px]">
+            &nbsp;{subheading}
+          </span>
+
+          <div className="mt-[8px] w-[380px] h-[180px] 3xl:mt-[12px] 3xl:w-[500px] 3xl:h-[260px] 4xl:mt-[16px] 4xl:w-[700px] 4xl:h-[460px] 8xl:mt-[24px] 8xl:w-[1000px] 8xl:h-[700px]">
+            {/* Chart */}
+            <Plot
+              key={chartNum.toString()}
+              data={chartData}
+              layout={chartLayout}
+              useResizeHandler={true}
+              style={{ width: "100%", height: "100%" }}
+              config={{displayModeBar: false}}
+            />
+          </div>
+
+        </div>
+
+        {/* Price */}
+        <div className="bg-mm-gray-800/60 border border-mm-gray-600 font-semibold font-source-code-pro py-[21px] 3xl:py-[32px] 8xl:py-[48px] rounded-b-lg text-[32px] 3xl:text-[48px] 8xl:text-[72px] text-center">
+          {priceLabel}
+        </div>
+      </div>
     );
   }
 
@@ -532,83 +565,33 @@ class App extends Component {
     const { classes } = this.props;
     const collection = showFiltered ? filteredData : collectionData;
     return (
-      <div className="App">
-        <div className="Region" style={{ backgroundColor: 'black', marginTop: '10px', display: 'flex', justifyContent: "center" }} >
-          <span style={{ color: 'grey', fontSize: '18px' }}>Selected Region :  {this.state.selectedRegionName}   </span>
-        </div>
+      <div>
+        <div className="bg-mm-gray-900 grid px-[12px] 3xl:px-0 3xl:grid-cols-12">
+          <div className="3xl:col-start-2 3xl:col-end-12">
+            <div className="lg:h-screen">
+              {/* Header */}
+              <div className="bg-transparent flex flex-row justify-between items-center h-[40px] 3xl:h-[64px] 8xl:h-[96px] text-white">
+                <img className="w-[100px] h-[27px] 3xl:w-[150px] 3xl:h-[40px] 8xl:w-[225px] 8xl:h-[60px]" src={Logomark} alt="Macrometa Logo"/>
+                <button className="border border-mm-gray-600 font-medium inline-flex items-center justify-center leading-[16px] 3xl:leading-[24px] 8xl:leading-[36px] my-[8px] 3xl:my-[12px] 8xl:my-[18px] rounded-lg text-[11px] 3xl:text-[16px] 8xl:text-[24px] w-[100px] 3xl:w-[150px] 8xl:w-[225px] h-[27px] 3xl:h-[40px] 8xl:h-[60px] text-center">
+                  {/* map-pin svg icon  */}
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-[13px] h-[13px] 3xl:w-[20px] 3xl:h-[20px] 8xl:w-[30px] 8xl:h-[30px] text-mm-gray-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                  </svg>
+                  <span>&nbsp;{this.state.selectedRegionName || "Region"}</span>
+                </button>
+              </div>
 
-        <div className="row" style={{ backgroundColor: 'black', marginTop: '10px' }}>
-          {
-            [CHART1, CHART2, CHART3].map(
-              (chartNum) => {
-                return this.renderCharts(chartNum);
-              }
-            )
-          }
-        </div>
-        <div className="row" style={{ justifyContent: ' space-around', padding: '30px 0 30px 0 ', backgroundColor: 'black' }}>
-          {
-            [CHART1, CHART2, CHART3].map(
-              (chartNum) => {
-                const { close } = this.state[chartNum];
-                const currentValue = close[close.length - 1] || 0;
-                return getCurrentValue(chartNum, currentValue);
-              }
-            )
-          }
-        </div>
-        <div className="row" style={{ flex: 1 }}>
-          <div className="leftPane">
-            <img alt="Macrometa" style={{ height: '64px', marginTop: '15px' }} src={logo} />
-            <div className="textField" >
-              <TextField
-                label="Filter"
-                placeholder="Enter here"
-                onChange={this.handleSearchTextChange}
-                classes={{
-                  root: classes.root
-                }}
-                margin="normal"
-                variant="outlined"
-              />
+              <div className="grid lg:grid-rows-2 h-[calc(100vh-40px)] 3xl:h-[calc(100vh-64px)] 8xl:h-[calc(100vh-96px)] ">
+                {/* Charts */}
+                <div className="grid lg:grid-cols-3 gap-4">
+                  {[CHART1, CHART2, CHART3].map((i) => this.renderCharts(i))}
+                </div>
 
+                {/* Trades Table */}
+                <TradesTable trades={collection} onChangeFilter={this.handleSearchTextChange}/>
+              </div>
             </div>
-          </div>
-          <div className="tableContainer">
-            <Table>
-              <TableHead
-                className={classes.tableHead}>
-                <TableRow>
-                  <TableCell component="th" className={classes.headCell}>Symbol</TableCell>
-                  <TableCell component="th" className={classes.headCell}>Price</TableCell>
-                  <TableCell component="th" className={classes.headCell}>Location</TableCell>
-                  <TableCell component="th" className={classes.headCell}>Region</TableCell>
-                  <TableCell component="th" className={classes.headCell}>Timestamp</TableCell>
-                  <TableCell component="th" className={classes.headCell}>Strategy</TableCell>
-                  <TableCell component="th" className={classes.headCell}>Type</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody
-                className={classes.tableBody}>
-                {
-                  collection.map((n) => {
-                    const shouldBuy = n.trade_type.includes("BUY");
-                    const cellColor = shouldBuy ? BLUE : GREEN;
-                    return (
-                      <TableRow key={Math.random()}>
-                        <TableCell className={classes.tableCell} style={{ color: cellColor }}>{n.symbol}</TableCell>
-                        <TableCell className={classes.tableCell} style={{ color: cellColor }}>{n.trade_price}</TableCell>
-                        <TableCell className={classes.tableCell} style={{ color: cellColor }}>{n.trade_location}</TableCell>
-                        <TableCell className={classes.tableCell} style={{ color: cellColor }}>{n.quote_region}</TableCell>
-                        <TableCell className={classes.tableCell} style={{ color: cellColor }}>{n.timestamp}</TableCell>
-                        <TableCell className={classes.tableCell} style={{ color: cellColor }}>{n.trade_strategy}</TableCell>
-                        <TableCell className={classes.tableCell} style={{ color: cellColor }}>{n.trade_type}</TableCell>
-                      </TableRow>
-                    );
-                  })
-                }
-              </TableBody>
-            </Table>
           </div>
         </div>
         <Snackbar
