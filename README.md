@@ -4,9 +4,11 @@ Demo to show a real-time trading dashboard for three different exchanges.
 
 The complete crypto-trading demo has two components:
 
-1. A stream application.
-2. A UI application written in Reactjs
+1. A backend built with Macrometa a Document Collection, multiple Streams, and a Stream Worker.
 
+If you haven't already configure the back end. Here's a link to the [Quick Start Guide](https://macrometa.com/docs/apps/crypto-trading).
+
+2. A headless frontend written in Reactjs.
 
 The UI then makes use of all the streams and the `trades` collection to show the charts and suggestions at one place.
 
@@ -15,67 +17,21 @@ For each of the three exchanges `USD`, `EUR` and `JPY`, this demo makes use of t
 - `CrytoTraderQuotes{USD/EUR/JPY}`
 - `CryptoTraderQuotesAvg{USD/EUR/JPY}`
 
-The below steps will describe on how to deploy the node and UI application.
+The below steps will describe on how set up the frontend.
 
-# 2. Prerequisites
+# 1. Prerequisites
 
-Clone tutorial-cryptotrading.
+Clone or Fork this repo.
 
 `nodejs` and `npm` must be installed on your system.
 
-`trades` collection should be present.
+# 2. How to run app(UI) locally
 
-# 3. How to run app(UI) locally
-
-> NOTE: This step is just for running the UI locally. The actual app is deployed on an AWS S3 Bucket. For the steps on S3 go to the `How to deploy app on S3` section.
+> NOTE: This step is just for running the UI locally.
 
 Go to crypto-demo and run the following
 If `node_modules` is not there, execute `npm install`.
 
-Once all the node modules have been installed execute `npm start` to start the development server. This will start a local development server on `localhost:<some_port>`.
+Once all the node modules have been installed execute `npm start` to start the development server. This will start a local development server on `localhost:<some_port>`. You can log in with your Macrometa credentials, but make sure you've followed the configuration steps in the [Quick Start Guide](https://macrometa.com/docs/apps/crypto-trading) first.
 
-# 4. How to deploy app(UI) on S3
-
-If `node_modules` is not there, execute `npm install`.
-
-Go to crypto-demo and run `npm run build`.
-This will create a folder build.
-
-The contents of this `build` folder need to be copied to the S3 bucket.
-
-If using aws cli run `aws s3 cp build s3://<your-s3-bucket-name> --recursive` to recursively copy all files and folders inside the `build` folder to the S3 bucket.
-
-The bucket needs to be public in order for the website to be visible.
-
-A sample `bucket policy` is:
-
-```js
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "PublicReadGetObject",
-            "Effect": "Allow",
-            "Principal": "*",
-            "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::<your-s3-bucket-name>/*"
-        }
-    ]
-}
-```
-
-Now go to the `Properties` tab in the AWS console for this bucket and open `Static website hosting` option. Then select the option `Use this bucket to host a website` and provide `index.html` for both `Index document` and `Error document` text fields. Click on save and the website is now live!
-
-# 5. How to deploy the stream application.
-
-Deploy the stream application on your federation and activate the app. Stream app definition can be found [here](./streamapps/Crypto-Trading-App.md)
-
-Activate the app and you will be able to see the data in the UI.
-
-# 6. Already deployed demo
-
-Go to `http://crypto.gdn1.s3-website-us-east-1.amazonaws.com/`
-
-Log in using your own credentials or the default ones.
-
-Start the Node server locally to see the data on the Graphs.
+We also have a frontend [already deployed](https://macrometacorp.github.io/tutorial-cryptotrading/). You can login with the credentials we provide to see the app working, or use your own Macrometa account credentials after you have configured the Crypto App backend.
