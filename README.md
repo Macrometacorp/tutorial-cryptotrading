@@ -34,6 +34,6 @@ Clone or Fork this repo.
 Go to crypto-demo and run the following
 If `node_modules` is not there, execute `npm install`.
 
-Once all the node modules have been installed execute `npm start` to start the development server. This will start a local development server on `localhost:<some_port>`. You can log in with your Macrometa credentials, but make sure you've followed the configuration steps in the [Quick Start Guide](https://macrometa.com/docs/apps/crypto-trading) first.
+Once all the node modules have been installed, execute `npm start` to start the development server. This starts a local development server on `localhost:<some_port>`. You can log in with your Macrometa credentials.
 
 We also have a frontend [already deployed](https://macrometacorp.github.io/tutorial-cryptotrading/). You can login with the credentials we provide to see the app working, or use your own Macrometa account credentials after you have configured the Crypto App backend.
