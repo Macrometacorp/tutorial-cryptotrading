@@ -14,15 +14,13 @@ If you haven't already configure the backend, refer to the [Crypto Trading App](
 
 The below steps will describe on how to set up the frontend.
 
-# 1. Clone or Fork the Repo
+Prerequisite: `nodejs` and `npm` must be installed on your system.
+
+## 1. Clone or Fork the Repo
 
 `git clone git@github.com:Macrometacorp/tutorial-cryptotrading.git` or click on the `Fork` button in the upper right hand corner of this repo.
 
-# 2. Run the App Locally
-
-`nodejs` and `npm` must be installed on your system.
-
-> NOTE: This step is just for running the UI locally.
+## 2. Run the App Locally
 
 Go to the crypto-demo folder in a terminal and run the following: `npm install`
 
