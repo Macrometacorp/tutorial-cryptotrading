@@ -21,7 +21,7 @@ For each of the three exchanges `USD`, `EUR` and `JPY`, this demo makes use of t
 
 The below steps will describe on how to set up the frontend.
 
-# 1. Prerequisites
+# 1. Clone or Fork the Repo
 
 Clone or Fork this repo.
 
