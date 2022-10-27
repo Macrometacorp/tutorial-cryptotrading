@@ -19,7 +19,7 @@ For each of the three exchanges `USD`, `EUR` and `JPY`, this demo makes use of t
 - `CrytoTraderQuotes{USD/EUR/JPY}`
 - `CryptoTraderQuotesAvg{USD/EUR/JPY}`
 
-The below steps will describe on how set up the frontend.
+The below steps will describe on how to set up the frontend.
 
 # 1. Prerequisites
 
