@@ -27,7 +27,7 @@ Clone or Fork this repo.
 
 `nodejs` and `npm` must be installed on your system.
 
-# 2. How to run app(UI) locally
+# 2. Run the App Locally
 
 > NOTE: This step is just for running the UI locally.
 
