@@ -22,6 +22,6 @@ Prerequisite: `nodejs` and `npm` must be installed on your system.
 
 Go to the crypto-demo folder in a terminal and run the following: `npm install`
 
-Once all the node modules have been installed, execute `npm start` to start the development server. This starts a local development server on `localhost:<some_port>`. You can log into the app with your Macrometa credentials. You will need to configure the Crypto App backend for the app to work.
+Once all the node modules have been installed, execute `npm start` to start the development server. This starts a local development server on `localhost:<some_port>`. You can log into the app with your Macrometa credentials. You will need to [configure](https://macrometa.com/docs/apps/crypto-trading) the Crypto App backend for the app to work.
 
-We also have a [Crypto Trading App frontend](https://macrometacorp.github.io/tutorial-cryptotrading/) already deployed. You can log in with the credentials we provide to see the app working, or use your own Macrometa account credentials after you have configured the Crypto App backend.
+We also have a [Crypto Trading App frontend](https://macrometacorp.github.io/tutorial-cryptotrading/) already deployed. You can log in with the credentials we provide to see the app working, or use your own Macrometa account credentials after you have [configured](https://macrometa.com/docs/apps/crypto-trading) the Crypto App backend.
