@@ -10,7 +10,7 @@ The complete crypto-trading demo has two components:
 
 If you haven't already configure the backend, refer to the [Crypto Trading App](https://macrometa.com/docs/apps/crypto-trading).
 
-2. A headless frontend written in Reactjs.
+2. A headless frontend written in ReactJS.
 
 The UI then makes use of all the streams and the `trades` collection to show the charts and suggestions at one place.
 
