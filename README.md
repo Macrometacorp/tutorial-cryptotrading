@@ -6,7 +6,7 @@ The complete crypto-trading demo has two components:
 
 1. A backend built with Macrometa a Document Collection, multiple Streams, and a Stream Worker.
 
-If you haven't already configure the backend, refer to the [Crypto Trading App](https://macrometa.com/docs/apps/crypto-trading).
+If you haven't already configure the backend, refer to the [getting started guide](https://macrometa.com/docs/apps/crypto-trading).
 
 2. A headless frontend written in ReactJS.
 
