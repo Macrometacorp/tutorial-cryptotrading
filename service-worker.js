@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/tutorial-cryptotrading/precache-manifest.b8eed6005b46a3aa66dd3892dfeb5fd7.js"
+  "/tutorial-cryptotrading/precache-manifest.62a3c7a258e45d86e36313fffe5bb24d.js"
 );
 
 workbox.clientsClaim();

@@ -1,14 +1,14 @@
 {
-  "main.css": "/tutorial-cryptotrading/static/css/main.f8df4940.chunk.css",
-  "main.js": "/tutorial-cryptotrading/static/js/main.1db4f3bb.chunk.js",
-  "main.js.map": "/tutorial-cryptotrading/static/js/main.1db4f3bb.chunk.js.map",
-  "static/js/1.c391cb5a.chunk.js": "/tutorial-cryptotrading/static/js/1.c391cb5a.chunk.js",
-  "static/js/1.c391cb5a.chunk.js.map": "/tutorial-cryptotrading/static/js/1.c391cb5a.chunk.js.map",
+  "main.css": "/tutorial-cryptotrading/static/css/main.1caaa8bc.chunk.css",
+  "main.js": "/tutorial-cryptotrading/static/js/main.b2dfb56b.chunk.js",
+  "main.js.map": "/tutorial-cryptotrading/static/js/main.b2dfb56b.chunk.js.map",
+  "static/js/1.b073c4ad.chunk.js": "/tutorial-cryptotrading/static/js/1.b073c4ad.chunk.js",
+  "static/js/1.b073c4ad.chunk.js.map": "/tutorial-cryptotrading/static/js/1.b073c4ad.chunk.js.map",
   "runtime~main.js": "/tutorial-cryptotrading/static/js/runtime~main.0eed778d.js",
   "runtime~main.js.map": "/tutorial-cryptotrading/static/js/runtime~main.0eed778d.js.map",
   "static/media/logomark.svg": "/tutorial-cryptotrading/static/media/logomark.fa69dc67.svg",
-  "static/css/main.f8df4940.chunk.css.map": "/tutorial-cryptotrading/static/css/main.f8df4940.chunk.css.map",
+  "static/css/main.1caaa8bc.chunk.css.map": "/tutorial-cryptotrading/static/css/main.1caaa8bc.chunk.css.map",
   "index.html": "/tutorial-cryptotrading/index.html",
-  "precache-manifest.b8eed6005b46a3aa66dd3892dfeb5fd7.js": "/tutorial-cryptotrading/precache-manifest.b8eed6005b46a3aa66dd3892dfeb5fd7.js",
+  "precache-manifest.62a3c7a258e45d86e36313fffe5bb24d.js": "/tutorial-cryptotrading/precache-manifest.62a3c7a258e45d86e36313fffe5bb24d.js",
   "service-worker.js": "/tutorial-cryptotrading/service-worker.js"
 }
