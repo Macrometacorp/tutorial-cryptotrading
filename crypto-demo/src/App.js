@@ -72,9 +72,9 @@ class App extends Component {
       availableRegions: null,
       selectedRegionUrl: null,
       loginModal: true,
-      federationUrl: "xxx.macrometa.io",
-      fabric: 'xxxx',
-      email: "xxxx@macrometa.io",
+      federationUrl: "play.macrometa.io",
+      fabric: 'crypto_trading_bot',
+      email: "demo@macrometa.io",
       password: 'xxxx',
       selectedRegionName: null
     };
@@ -457,7 +457,13 @@ class App extends Component {
           >
             {
               availableRegions.map(region => {
-                const { locationInfo: { city, countrycode }, tags: { url } } = region;
+                let { locationInfo: { city, countrycode }, tags: { url } } = region;
+
+                // This is quick fix for Singapore region
+                if (countrycode === "SG") {
+                  city = "Singapore";
+                }
+
                 const label = `${city}, ${countrycode}`;
                 return <FormControlLabel key={label} value={url} control={<Radio />} label={label} />
               })
