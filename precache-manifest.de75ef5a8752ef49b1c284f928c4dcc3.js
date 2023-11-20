@@ -1,11 +1,11 @@
 self.__precacheManifest = [
   {
-    "revision": "b2dfb56b55239034e071",
+    "revision": "05f8dfea3962063850e6",
     "url": "/tutorial-cryptotrading/static/css/main.1caaa8bc.chunk.css"
   },
   {
-    "revision": "b2dfb56b55239034e071",
-    "url": "/tutorial-cryptotrading/static/js/main.b2dfb56b.chunk.js"
+    "revision": "05f8dfea3962063850e6",
+    "url": "/tutorial-cryptotrading/static/js/main.05f8dfea.chunk.js"
   },
   {
     "revision": "b073c4ada7afaecf0dc8",
@@ -20,7 +20,7 @@ self.__precacheManifest = [
     "url": "/tutorial-cryptotrading/static/media/logomark.fa69dc67.svg"
   },
   {
-    "revision": "17605e872f0b3a8fc60384025bad416e",
+    "revision": "431b1982cb5a28aea14a806f457f252b",
     "url": "/tutorial-cryptotrading/index.html"
   }
 ];
