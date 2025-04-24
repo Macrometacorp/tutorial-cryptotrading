@@ -26,7 +26,7 @@ Testing the Stream Application:
 -- Streams for the http call requests
 -------------------------------------------------------------------------------------------------------------------------------------
 
-CREATE SINK UsdCryptoTraderRequestStream WITH (type='http-call', publisher.url='https://api.pro.coinbase.com/products/btc-usd/ticker', method='GET', headers="'User-Agent:c8cep'", sink.id='coinbase-ticker', map.type='json') (triggered_time string);
+CREATE SINK UsdCryptoTraderRequestStream WITH (type='http-call', publisher.url='https://api.exchange.coinbase.com/products/btc-usd/ticker', method='GET', headers="'User-Agent:c8cep'", sink.id='coinbase-ticker', map.type='json') (triggered_time string);
 
 CREATE SINK EurCryptoTraderRequestStream WITH (type='http-call', publisher.url='https://www.bitstamp.net/api/v2/ticker/btceur', method='GET', sink.id='bitstamp-ticker', map.type='json') (triggered_time string);
 
